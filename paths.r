@@ -3,7 +3,8 @@
 host <- system('hostname', intern = T)
 storage.dir <- '/projectnb/talbot-lab-data/caverill/paleo_myco_2018/'
 if(host == 'pecan2'){storage.dir <- '/fs/data3/caverill/paleo_myco_2018/'}
-system('mkdir -p ',storage.dir)
+cmd <- paste0('mkdir -p ',storage.dir)
+system(cmd)
 
 #data product paths
     historic.composition.path <- paste0(storage.dir,'SetTreeComp_Level2_v1.0.nc'     )
