@@ -32,7 +32,7 @@ x$intercept <- rep(1, nrow(x))
 x$hist_ndep <- x$h.relEM * x$n.dep
 
 #subset x for testing.
-x <- data.frame(x[,c('intercept')])
+x <- data.frame(x[,c('intercept','h.relEM')])
 
 #create JAGS data object.
 #jd <- list(y=y, x = as.matrix(x), N = nrow(x), N.pred = ncol(x))
@@ -78,8 +78,8 @@ jags.out <- run.jags(jags.model,
                      data=jd,
                      n.chains=3,
                      adapt = 500,
-                     burnin = 1000,
-                     sample = 1000,
+                     burnin = 3000,
+                     sample = 2000,
                      monitor=c('m','sigma.sq','phi'),
                      method = 'rjparallel')
 
