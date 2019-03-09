@@ -87,8 +87,8 @@ COND <- merge(COND,forest_prop, all.x = T)
 #need to have at least one plot with condition =1 (forested)
 COND <- COND[CONDID == 1,]
 
-#only keep plots that are 90% forested.
-COND <- COND[COND$forest_proportion > 0.9,]
+#only keep plots that are 100% forested.
+COND <- COND[COND$forest_proportion == 1,]
 
 ###---merge PLOT and COND tables
 PC = merge(COND, PLOT, by="PLT_CN")
@@ -98,17 +98,17 @@ PC <- data.table(PC)
 rm(PLOT,COND, SUBP_COND)
 
 #---Query TREE table
-#Colin is modidfying this query to only grab sites with soils data. 
+#Only query states in the PalEON domain.
 #Colin did this because the full query started crashing pecan2. boring.
 # 1. colin has removed p2a_grm_flg!=\'N\' from the query. This killed the west coast.
-# 2. statuscd=1 restricts query to live trees. We take anything that is alive in the current or previous measurement period.
+# 2. Onlty take trees that are alive, or were alive in previous census.
 cat("Query TREE...\n")
 
 #first, grab all PLT_CN values where soil was measured, as well as remeasurements
      PC$PLT_CN_filter <- as.numeric(gsub('"', "", PC$PLT_CN))
 PC$PREV_PLT_CN_filter <- as.numeric(gsub('"', "", PC$PREV_PLT_CN))
-a <- PC[     PLT_CN_filter %in% file.soil$PLT_CN,     PLT_CN]
-a.soil <- PC[     PLT_CN_filter %in% file.soil$PLT_CN,     PLT_CN]
+a <- PC[     PLT_CN_filter %in% file.soil$PLT_CN,     PLT_CN] #PC for soil subset.
+a.soil <- PC[     PLT_CN_filter %in% file.soil$PLT_CN,     PLT_CN] 
 b.soil <- PC[PREV_PLT_CN_filter %in% file.soil$PLT_CN,     PLT_CN]
 of_interest <- data.frame(c(a,b))
 colnames(of_interest)<- c('test')
@@ -123,7 +123,7 @@ setnames(out, toupper(names(out)))
 
 #RI is 44, CT is 9
 
-#write a for loop because everything is the worst.
+#write a for loop, this should be dropped in parallel.
 #really I should just query ones that match the file.soil PLT_CN vector. But. SQL queries hate me. So I'm doing this.
 #querying based on the 'of_interest' PLT_CN values would probably speed this up a ton.
 #could also query in parallel using the doParallel package and a foreach loop.
@@ -135,8 +135,6 @@ for(i in 1:length(states)){
                 WHERE (PREVDIA>5 OR DIA>5) AND (STATUSCD=1 OR PREV_STATUS_CD=1) AND 
                 STATECD IN (', paste(states[i],collapse=','), ')')
   pre.tree = as.data.table(dbGetQuery(con, query))
-  #only save data that has soil information
-  #pre.tree <- pre.tree[PLT_CN %in% of_interest$test,] #get ALL of the trees.
   out <- rbind(out,pre.tree)
   cat(paste0(i,' of ',length(states),' states queried.\n'))
 }
@@ -160,11 +158,14 @@ TREE[, CONmax := maxNA(CONDID), by=PLT_CN]
 # *** RK: Next line looks wrong. It's a sum, not max, despite the name. I did rewrite the line but this is equivalent to what Travis had so keeping for now.
 TREE[, STATUSCDmax := sumNA(3*as.integer(STATUSCD==3)), by=PLT_CN]
 
-# RECONCILECD
+# RECONCILECD. This is just signaling that a tree isn't a new tree to the plot.
 TREE[is.na(RECONCILECD), RECONCILECD :=0] # Set NA values to 0 (unused)
 
 # Filter
 #TREE = TREE[ CONmax==1 & STATUSCDmax!=3 & STATUSCD!=0 & RECONCILECD<=4 ]
+#STATUSCD=0 are remeasured trees that shouldn't be there or something.
+#STATUSCD=3 means a tree was cut down by humans.
+#RECONCILECD<=4 means these are acceptable reasons to have missed counting trees in the previous inventory.
 TREE = TREE[STATUSCDmax!=3 & STATUSCD!=0 & RECONCILECD<=4 ]
 
 #CALCULATE number of trees in a plot. 
@@ -185,7 +186,18 @@ PC.soil   <-   PC[PLT_CN %in% initial$a,]
 TREE.soil <- TREE[PLT_CN %in% initial$a,]
 
 #Link together tempora sequences of trees and PC plots.
-PC.present <- PC[!(PLT_CN %in% PREV_PLT_CN),] #newest observations are not a PREV_PLT_CN of anything.
+#PC.present <- PC[!(PLT_CN %in% PREV_PLT_CN),] #newest observations are not a PREV_PLT_CN of anything.
+#n.past <- sum(!is.na(PC.present$PREV_PLT_CN))
+#PC_time_series <- list()
+#PC_time_series[[1]] <- PC[!(PLT_CN %in% PREV_PLT_CN),] #newest observations are not a PREV_PLT_CN of anything.
+#n.past <- sum(!is.na(PC_time_series[[i]]$PREV_PLT_CN))
+#i = 1
+#Chain together past measurements.
+#while(n.past > 0){
+#  PC_time_series[[i+1]] <- PC[PLT_CN %in% PC_time_series[[i]]$PREV_PLT_CN]
+#  n.past <- sum(!is.na(PC_time_series[[i+1]]$PLT_CN))
+  i = i + 1
+#}
 PC.past1   <- PC[PLT_CN %in% PC.present$PREV_PLT_CN,]
 PC.past2   <- PC[PLT_CN %in% PC.past1$PREV_PLT_CN,]
 PC.past3   <- PC[PLT_CN %in% PC.past2$PREV_PLT_CN,]

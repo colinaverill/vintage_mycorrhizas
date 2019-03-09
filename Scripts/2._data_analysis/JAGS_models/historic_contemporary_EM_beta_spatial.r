@@ -79,7 +79,7 @@ jags.out <- run.jags(jags.model,
                      burnin = 20000,
                      sample = 2000,
                      monitor=c('m','sigma.sq','phi'),
-                     method = 'rjags')
+                     method = 'rjparallel')
 
 #Save output.----
 saveRDS(jags.out, output.path)

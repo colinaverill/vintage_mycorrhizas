@@ -3,8 +3,10 @@
 host <- system('hostname', intern = T)
 storage.dir <- '/projectnb/talbot-lab-data/caverill/paleo_myco_2018/'
 if(host == 'pecan2'){storage.dir <- '/fs/data3/caverill/paleo_myco_2018/'}
+if(host == 'Colins-MacBook-Pro-2.local'){storage.dir <- '/Users/colin/Desktop/paleo_myco_2018/'}
 cmd <- paste0('mkdir -p ',storage.dir)
 system(cmd)
+
 
 #data product paths
     historic.composition.path <- paste0(storage.dir,'SetTreeComp_Level2_v1.0.nc'     )
@@ -45,3 +47,4 @@ Product_2.soil.path    <- paste0(fia.dir,"Product_2.soil.rds")
 Product_3.path         <- paste0(fia.dir,"Product_3.rds")
 Product_3.soil.path    <- paste0(fia.dir,"Product_3.soil.rds")
 Product_1.all.path     <- paste0(fia.dir,"Product_1.all.rds")
+time_series_dat.path   <- paste0(fia.dir,'time_series_dat.rds')

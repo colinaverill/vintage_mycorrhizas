@@ -19,7 +19,8 @@ d <- d[complete.cases(d),]
 #model 
 #There are no negative feedbacks except tree diameter.
 #other processes actually decrease probabilty a tree dies.
-mod <- glm(death ~ REMPER:(DIA.cm + inc.cm2.yr + mat + map + STDAGE + plot.BASAL + n.trees + em * n.dep), data = d, family = binomial)
+#3-way interaction between Nitrogen dep, AM-EM indetitiy and community relEM, complex, but seems to suggest AM trees die more around ectos, ecto trees die less.
+mod <- glm(death ~ REMPER:(DIA.cm + inc.cm2.yr + mat + map + STDAGE + plot.BASAL + n.trees + em * n.dep *relEM), data = d, family = binomial)
 summary(mod)
 rsq(mod)
 
@@ -43,3 +44,4 @@ abline(0,1, lwd = 2)
 abline(mod.sum, lty = 2, col = 'purple')
 mod.rsq <- round(summary(mod.sum)$r.squared,2)
 mtext(paste0('R2 = ',mod.rsq), side = 3, line = -2, adj = 0.05)
+

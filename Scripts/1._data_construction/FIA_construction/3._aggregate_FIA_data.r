@@ -1,5 +1,5 @@
-#This script uses the output of "1. FIA Extract and Filter.r". This output represents all data at the tree-level that meet our filtering criteria, and are plots that are represented in the soils data set. 
-#This script uses the output of "2. FIA soil data extraction.r". This output is the profile scale aggregated soil data for each plot that met all filtering criteria. 
+#This script uses the output of "2._FIA_forests_data.r". This output represents all data at the tree-level that meet our filtering criteria, and are plots that are represented in the soils data set. 
+#This script uses the output of "1._FIA_soils_data.r". This output is the profile scale aggregated soil data for each plot that met all filtering criteria. 
 #This script builds 3 products
 #Product_1: The total basal area of all trees in every plot at the time of soil measurement, and then subsets this basal area by mycorrhizal type and PFT, pairs with soils.
 #This is for the soil C storage analysis, and the relative abundance of AM and EM trees analysis.
@@ -15,18 +15,22 @@ rm(list=ls())
 require(data.table)
 source('paths.r')
 
-#load data from Tree and Soil queries
+#load data from Tree and Soil queries.----
 s.FIA.1 <- readRDS(FIA_extraction_out.path)
 s.FIA.2 <- readRDS(FIA_extraction_out_FUTURE.path)
+past3 <- readRDS(all.past3.path)
+past2 <- readRDS(all.past2.path)
 a.FIA.1 <- readRDS(all.past1.path)
 a.FIA.2 <- readRDS(all.present.path)
 Soils      <- read.csv(soil_data.processed.path)
 FIA.states <- data.table(read.csv('required_products_utilities/FIA_state_codes_regions.csv'))
 #put data frames in a list. This will make your life easier.
-data.list <- list(s.FIA.1,s.FIA.2,a.FIA.1,a.FIA.2)
-names(data.list) <- c('s.FIA.1','s.FIA.2','a.FIA.1','a.FIA.2')
+data.list <- list(s.FIA.1,s.FIA.2,a.FIA.1,a.FIA.2,past2,past3)
+names(data.list) <- c('s.FIA.1','s.FIA.2','a.FIA.1','a.FIA.2','past2','past3')
+#turn off scientific notation.
+options(scipen = 999)
 
-#remove quotes from CN values for both FIA data sets because they mess everything up.
+#remove quotes from CN values for both FIA data sets because they mess everything up.----
 for(i in 1:length(data.list)){
   data.list[[i]]$PLT_CN      <- as.numeric(gsub('"', "",data.list[[i]]$PLT_CN     ))
   data.list[[i]]$PREV_PLT_CN <- as.numeric(gsub('"', "",data.list[[i]]$PREV_PLT_CN))
@@ -34,41 +38,64 @@ for(i in 1:length(data.list)){
   data.list[[i]]$PREV_TRE_CN <- as.numeric(gsub('"', "",data.list[[i]]$PREV_TRE_CN))
 }
 
-#remove any plots that have "clear evidence of artificial regeneration." STDORGCD == 1. 
+#remove any plots that have "clear evidence of artificial regeneration." STDORGCD == 1. -----
 for(i in 1:length(data.list)){
   to.remove <- unique(data.list[[i]][STDORGCD == 1,]$PLT_CN)
   data.list[[i]] <- data.list[[i]][!(PLT_CN %in% to.remove),]
 }
 
-#remove any plots that have a tree with STATUSCD = 3. These are plots where humans cut down a tree.
+#remove any plots that have a tree with STATUSCD = 3. These are plots where humans cut down a tree.----
 #125 of 4155 intiial, and 285/2918 future plots.
 for(i in 1:length(data.list)){
   to.remove <- unique(data.list[[i]][STATUSCD == 3,]$PLT_CN)
   data.list[[i]] <- data.list[[i]][!(PLT_CN %in% to.remove),]
 }
 
-####Remove all saplings (DIA < 5inches) based on microplot samplings.
+####Remove all saplings (DIA < 5inches) based on microplot samplings.----
 for(i in 1:length(data.list)){
   data.list[[i]] <- data.list[[i]][!(TPA_UNADJ == 74.965282),]
 }
 
-####Remove one random site that has very strange growth/recruitment numbers.
-####Fairly confident this is recovering from a recent clearcut, but was not indicated in other filters.
+####Remove one random site that has very strange growth/recruitment numbers.----
+#Fairly confident this is recovering from a recent clearcut, but was not indicated in other filters.
 for(i in 1:length(data.list)){
   data.list[[i]] <- data.list[[i]][!(PLT_CN == 65355954010538),]
 }
 
-###############################################################
 #####Product 1. Basal area of each plot paired with soils######
-###############################################################
-
-#Calculate number of species in each plot.
+#Calculate number of species in each plot.----
 for(i in 1:length(data.list)){
   data.list[[i]][, spp.count := uniqueN(SPCD), by = PLT_CN]
 }
 
-#generate lists of myc types and PFTs.
- em.list <- levels(a.FIA.2$MYCO_ASSO)
+#For every single species, generate con and hetero-specific density of trees within the plot.----
+#testing with one before generalizing to list.
+#NOTE- repeat these calculations with basal area as well.
+#this is a ton of data. One dataframe per species at the plot level.
+#This probably needs to be modified to write these to a folder, one at a time.
+k <- copy(data.list$a.FIA.1)
+spp_list <- unique(k$SPCD)
+con.het_output <- list()
+for(i in 1:length(spp_list)){
+  spp <- spp_list[i]
+  myc <- as.character(unique(k[SPCD == spp,]$MYCO_ASSO))
+  #count conspecifics per plot. Live trees only (AGENTCD==0).
+  sub <- copy(data.list$a.FIA.1)
+  sub[AGENTCD == 0, con_specific := ifelse(SPCD == spp, 1, 0)]
+  sub[AGENTCD == 0, het_specific := ifelse(SPCD == spp, 0, 1)]
+  sub[AGENTCD == 0, con_myco     := ifelse(MYCO_ASSO == myc, 1, 0)]
+  sub[AGENTCD == 0, het_myco     := ifelse(MYCO_ASSO == myc, 0, 1)]
+  #get plot level con/hetero density.
+  sub <- sub[,.(PLT_CN, con_specific, het_specific, con_myco, het_myco)]
+  sub <- aggregate(. ~ PLT_CN, data = sub, FUN = sum, na.rm = T)
+  #to_return <- merge(k, sub, all.x = T)
+  con.het_output[[i]] <- sub
+}
+names(con.het_output) <- spp_list
+
+
+#generate lists of myc types and PFTs.-----
+em.list <- levels(a.FIA.2$MYCO_ASSO)
 pft.list <- levels(a.FIA.2$PFT)
 all.list <- c(em.list,pft.list)
 
@@ -160,6 +187,13 @@ Product_1.soil    <- Product_1.soil[cn < 90,]
 saveRDS(Product_1     , file=Product_1.path     )
 saveRDS(Product_1.soil, file=Product_1.soil.path)
 
+#time series relEM modeling
+time_series <- list(scaled.list[['a.FIA.2']], 
+                    scaled.list[['a.FIA.1']], 
+                    scaled.list[['past2']], 
+                    scaled.list[['past3']])
+names(time_series) <- c('present','past1','past2','past3')
+saveRDS(time_series,time_series_dat.path)
 
 ##################################################################
 ##### Product 2. Individual-level Growth and Mortality data ######

@@ -56,7 +56,7 @@ par(mfrow = c(2,2))
 par(oma = c(.1,.1,.1,.1))
 #hist(corrected)
 hist(all$relEM, ylim = c(0,3000))
-hist(boot::inv.logit(corrected), ylim = c(0,3000))
+hist(boot::inv.logit(corrected), ylim = c(0,3000), xlab = 'Fraction forest ECM')
 hist(logit(all$relEM))
 hist(corrected)
 

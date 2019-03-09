@@ -2,8 +2,9 @@
 #Fit one model with interactions or two models, one for EM one for AM?
 #One model. Go through, test for interactions one at a time.
 rm(list=ls())
+library(data.table)
 source('paths.r')
-d <- readRDS(Product_2.path)
+d <- data.table(readRDS(Product_2.path))
 d$em <- ifelse(d$MYCO_ASSO == 'ECM',1,0)
 d <- d[n.trees >  5,]
 d <- d[!(REMPER == 0)]
@@ -45,9 +46,14 @@ binned$observed  <- aggregate(log(inc.cm2.yr)  ~ bin, data = to.viz, FUN = mean)
 binned$trees <- aggregate(inc.cm2.yr ~ bin, data = to.viz, FUN = length)[,2]
 
 #plot it- only include bins with at least 60 trees observed.
-plot(observed ~ fitted, data = binned[binned$trees > 100,])
+plot(log(inc.cm2.yr) ~ fitted, pch = 16, cex = 0.2, col = 'light gray', data = dat, xlim = c(-3.5,0.3), ylim = c(-4,2))
+par(new=T)
+plot(observed ~ fitted, data = binned[binned$trees > 100,], pch = 16, xlim = c(-3.5,0.3), ylim = c(-4,2))
 mod.sum <- lm(observed ~ fitted, data = binned[binned$trees > 100,])
 abline(0,1, lwd = 2)
 abline(mod.sum, lty = 2, col = 'purple')
 mod.rsq <- round(summary(mod.sum)$r.squared,2)
 mtext(paste0('Binned R2 = ',mod.rsq), side = 3, line = -2, adj = 0.05)
+mtext(paste0('Total model R2 = ',round(summary(mod)$r.squared,2)), side = 3, line = -3, adj = 0.05)
+
+
