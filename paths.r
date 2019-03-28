@@ -4,6 +4,7 @@ host <- system('hostname', intern = T)
 storage.dir <- '/projectnb/talbot-lab-data/caverill/paleo_myco_2018/'
 if(host == 'pecan2'){storage.dir <- '/fs/data3/caverill/paleo_myco_2018/'}
 if(host == 'Colins-MacBook-Pro-2.local'){storage.dir <- '/Users/colin/Desktop/paleo_myco_2018/'}
+if(host == "vpn-offcampus-168-122-67-84.bu.edu"){storage.dir <- '/Users/colin/Desktop/paleo_myco_2018/'}
 cmd <- paste0('mkdir -p ',storage.dir)
 system(cmd)
 
