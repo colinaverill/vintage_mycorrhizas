@@ -110,14 +110,17 @@ PC$PREV_PLT_CN_filter <- as.numeric(gsub('"', "", PC$PREV_PLT_CN))
 a <- PC[     PLT_CN_filter %in% file.soil$PLT_CN,     PLT_CN] #PC for soil subset.
 a.soil <- PC[     PLT_CN_filter %in% file.soil$PLT_CN,     PLT_CN] 
 b.soil <- PC[PREV_PLT_CN_filter %in% file.soil$PLT_CN,     PLT_CN]
-of_interest <- data.frame(c(a,b))
-colnames(of_interest)<- c('test')
+#of_interest <- data.frame(c(a,b))
+#colnames(of_interest)<- c('test')
 initial.soil <- data.frame(a.soil)
 revisit.soil <- data.frame(b.soil)
 
 #build an empty data.table to store output. 
-out <- data.frame(matrix(NA, nrow = 0, ncol = 18))
-colnames(out) <- c('cn','prev_tre_cn','plt_cn','invyr','condid','dia','tpa_unadj','carbon_ag','carbon_bg','spcd','stocking','statuscd','prevdia','prev_status_cd','p2a_grm_flg','reconcilecd','agentcd','tpamort_unadj')
+variables_to_extract <- c('cn','prev_tre_cn','plt_cn','invyr','condid','dia','tpa_unadj','carbon_ag','carbon_bg',
+                          'spcd','stocking','statuscd','prevdia','prev_status_cd','p2a_grm_flg','reconcilecd',
+                          'agentcd','tpamort_unadj','diahtcd','ht','htcd','actualht')
+out <- data.frame(matrix(NA, nrow = 0, ncol = length(variables_to_extract)))
+colnames(out) <- variables_to_extract
 out <- data.table(out)
 setnames(out, toupper(names(out)))
 
@@ -130,7 +133,8 @@ setnames(out, toupper(names(out)))
 tic()
 for(i in 1:length(states)){
   query = paste('select CN, PREV_TRE_CN, PLT_CN, INVYR, CONDID, DIA, TPA_UNADJ, CARBON_AG, CARBON_BG,
-              SPCD, STOCKING, STATUSCD, PREVDIA, PREV_STATUS_CD, P2A_GRM_FLG, RECONCILECD, AGENTCD, TPAMORT_UNADJ 
+              SPCD, STOCKING, STATUSCD, PREVDIA, PREV_STATUS_CD, P2A_GRM_FLG, RECONCILECD, AGENTCD, TPAMORT_UNADJ,
+              DIAHTCD, HT, HTCD, ACTUALHT
                 from TREE 
                 WHERE (PREVDIA>5 OR DIA>5) AND (STATUSCD=1 OR PREV_STATUS_CD=1) AND 
                 STATECD IN (', paste(states[i],collapse=','), ')')
@@ -182,11 +186,10 @@ TREE = merge(TREE, CA_myctype, all.x=T, by = "SPCD")
 
 ###subset to only include TREE sites with soil profiles, merge with complementary PC keys. 
 setnames(TREE, 'CN','TRE_CN')
-PC.soil   <-   PC[PLT_CN %in% initial$a,]
-TREE.soil <- TREE[PLT_CN %in% initial$a,]
+PC.soil   <-   PC[PLT_CN %in% initial.soil$a,]
+TREE.soil <- TREE[PLT_CN %in% initial.soil$a,]
 
 #Link together tempora sequences of trees and PC plots.
-#PC.present <- PC[!(PLT_CN %in% PREV_PLT_CN),] #newest observations are not a PREV_PLT_CN of anything.
 #n.past <- sum(!is.na(PC.present$PREV_PLT_CN))
 #PC_time_series <- list()
 #PC_time_series[[1]] <- PC[!(PLT_CN %in% PREV_PLT_CN),] #newest observations are not a PREV_PLT_CN of anything.
@@ -196,8 +199,9 @@ TREE.soil <- TREE[PLT_CN %in% initial$a,]
 #while(n.past > 0){
 #  PC_time_series[[i+1]] <- PC[PLT_CN %in% PC_time_series[[i]]$PREV_PLT_CN]
 #  n.past <- sum(!is.na(PC_time_series[[i+1]]$PLT_CN))
-  i = i + 1
+#  i = i + 1
 #}
+PC.present <- PC[!(PLT_CN %in% PREV_PLT_CN),] #newest observations are not a PREV_PLT_CN of anything.
 PC.past1   <- PC[PLT_CN %in% PC.present$PREV_PLT_CN,]
 PC.past2   <- PC[PLT_CN %in% PC.past1$PREV_PLT_CN,]
 PC.past3   <- PC[PLT_CN %in% PC.past2$PREV_PLT_CN,]
@@ -212,8 +216,8 @@ all.past2   <- merge(TREE.past2, PC.past2, by = 'PLT_CN')
 all.past3   <- merge(TREE.past3, PC.past3, by = 'PLT_CN')
 
 #grab the set of future remeasurements of all soil FIA plots. 
-PC.soil.future <-     PC[PLT_CN %in% revisit$b,]
-TREE.soil.future <- TREE[PLT_CN %in% revisit$b,]
+PC.soil.future <-     PC[PLT_CN %in% revisit.soil$b,]
+TREE.soil.future <- TREE[PLT_CN %in% revisit.soil$b,]
 
 
 #merge current soils-trees-plot data
@@ -229,11 +233,11 @@ ALL.future = merge(TREE.soil.future, PC.soil.future, by='PLT_CN')
 #save outputs
 cat("Save.../n")
 tic()
-saveRDS(ALL       , file = file.out       )
-saveRDS(ALL.future, file = file.out.future)
+saveRDS(ALL       , file = file.out        )
+saveRDS(ALL.future, file = file.out.future )
 saveRDS(all.present,file = all.present.path)
-saveRDS(all.past1  ,file = all.past1.path)
-saveRDS(all.past2  ,file = all.past2.path)
-saveRDS(all.past3  ,file = all.past3.path)
+saveRDS(all.past1  ,file = all.past1.path  )
+saveRDS(all.past2  ,file = all.past2.path  )
+saveRDS(all.past3  ,file = all.past3.path  )
 toc()
 ###end script.

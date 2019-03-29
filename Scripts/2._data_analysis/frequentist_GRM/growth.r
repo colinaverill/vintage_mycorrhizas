@@ -62,20 +62,19 @@ d$het.myco.rel.basal <- d$het.myco.basal / d$plot.BASAL
 
 #plot histogram of desnity of conspecifics vs. conmycorrhizal types.
 par(mfrow = c(1,2))
-hist(dat$con.spec.rel.basal, ylim = c(0,10000), xlab ='rel abundance of con-specifics')
-hist(dat$con.myco.rel.basal, ylim = c(0,10000), xlab ='rel abundance of con-mycorrhizal type')
+hist(d$con.spec.rel.basal, ylim = c(0,10000), xlab ='rel abundance of con-specifics')
+hist(d$con.myco.rel.basal, ylim = c(0,10000), xlab ='rel abundance of con-mycorrhizal type')
 
 #Subset to AM vs. EM.
 d.am <- d[MYCO_ASSO == 'AM']
 d.em <- d[MYCO_ASSO == 'ECM']
-dat <- d[,.(SPCD,inc.cm2.yr,PFT,mat,map,BASAL,STDAGE,n.trees,em,relEM,n.dep,aridity,DIA.cm,plot.BASAL,
+dat <- d[,.(SPCD,inc.cm2.yr,PFT,mat,map,BASAL,STDAGE,n.trees,em,conifer,relEM,n.dep,aridity,DIA.cm,plot.BASAL,
             con.spec.dens,het.spec.dens,con.myco.dens,het.myco.dens,
             con.spec.basal,het.spec.basal,con.myco.basal,het.myco.basal,con.myco.rel.basal,con.spec.rel.basal)]
 dat <- dat[complete.cases(dat),]
 
 #model growth
-mod <- lm(log(inc.cm2.yr) ~ DIA.cm*conifer + n.dep*em +
-            conifer + mat + map + plot.BASAL + n.trees + STDAGE  + conifer + 
+mod <- lm(log(inc.cm2.yr) ~ n.dep*em + mat + map + plot.BASAL + n.trees + STDAGE + 
             con.spec.rel.basal + con.myco.rel.basal*em, data = dat)
 summary(mod)
 mod.am <- lm(log(inc.cm2.yr) ~ log(DIA.cm) + mat + map + plot.BASAL + STDAGE + n.dep + 

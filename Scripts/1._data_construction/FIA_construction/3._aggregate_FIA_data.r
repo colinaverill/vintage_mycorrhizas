@@ -1,3 +1,7 @@
+#Current status: There is a individual level con/hetero parallel calculation loop in the sacled script.
+#This needs to carry through to data sets used for growth and mortality.
+
+
 #This script uses the output of "2._FIA_forests_data.r". This output represents all data at the tree-level that meet our filtering criteria, and are plots that are represented in the soils data set. 
 #This script uses the output of "1._FIA_soils_data.r". This output is the profile scale aggregated soil data for each plot that met all filtering criteria. 
 #This script builds 3 products
@@ -12,8 +16,14 @@
 #s.FIA.2 or a.FIA.1 is the 2nd measurement.
 
 rm(list=ls())
-require(data.table)
+library(data.table)
+library(doParallel)
 source('paths.r')
+source('project_functions/tic_toc.r')
+
+#register parallel environment.
+n.cores <- detectCores()
+registerDoParallel(n.cores)
 
 #load data from Tree and Soil queries.----
 s.FIA.1 <- readRDS(FIA_extraction_out.path)
@@ -68,30 +78,37 @@ for(i in 1:length(data.list)){
   data.list[[i]][, spp.count := uniqueN(SPCD), by = PLT_CN]
 }
 
-#For every single species, generate con and hetero-specific density of trees within the plot.----
+#current and previous basal area in cm2.----
+for(i in 1:length(data.list)){
+  data.list[[i]]$PREVDIA <- as.numeric(data.list[[i]]$PREVDIA)
+  data.list[[i]][,BASAL    := pi*((2.54*DIA    )/2)^2]
+  data.list[[i]][,PREVBASAL:= pi*((2.54*PREVDIA)/2)^2]
+}
+
+#For every single species, generate con and hetero-specific density of trees within the plot at the plot-level.----
 #testing with one before generalizing to list.
 #NOTE- repeat these calculations with basal area as well.
 #this is a ton of data. One dataframe per species at the plot level.
 #This probably needs to be modified to write these to a folder, one at a time.
-k <- copy(data.list$a.FIA.1)
-spp_list <- unique(k$SPCD)
-con.het_output <- list()
-for(i in 1:length(spp_list)){
-  spp <- spp_list[i]
-  myc <- as.character(unique(k[SPCD == spp,]$MYCO_ASSO))
-  #count conspecifics per plot. Live trees only (AGENTCD==0).
-  sub <- copy(data.list$a.FIA.1)
-  sub[AGENTCD == 0, con_specific := ifelse(SPCD == spp, 1, 0)]
-  sub[AGENTCD == 0, het_specific := ifelse(SPCD == spp, 0, 1)]
-  sub[AGENTCD == 0, con_myco     := ifelse(MYCO_ASSO == myc, 1, 0)]
-  sub[AGENTCD == 0, het_myco     := ifelse(MYCO_ASSO == myc, 0, 1)]
-  #get plot level con/hetero density.
-  sub <- sub[,.(PLT_CN, con_specific, het_specific, con_myco, het_myco)]
-  sub <- aggregate(. ~ PLT_CN, data = sub, FUN = sum, na.rm = T)
-  #to_return <- merge(k, sub, all.x = T)
-  con.het_output[[i]] <- sub
-}
-names(con.het_output) <- spp_list
+#k <- copy(data.list$a.FIA.1)
+#spp_list <- unique(k$SPCD)
+#con.het_output <- list()
+#for(i in 1:length(spp_list)){
+#  spp <- spp_list[i]
+#  myc <- as.character(unique(k[SPCD == spp,]$MYCO_ASSO))
+#  #count conspecifics per plot. Live trees only (AGENTCD==0).
+#  sub <- copy(data.list$a.FIA.1)
+#  sub[AGENTCD == 0, con_specific := ifelse(SPCD == spp, 1, 0)]
+#  sub[AGENTCD == 0, het_specific := ifelse(SPCD == spp, 0, 1)]
+#  sub[AGENTCD == 0, con_myco     := ifelse(MYCO_ASSO == myc, 1, 0)]
+#  sub[AGENTCD == 0, het_myco     := ifelse(MYCO_ASSO == myc, 0, 1)]
+#  #get plot level con/hetero density.
+#  sub <- sub[,.(PLT_CN, con_specific, het_specific, con_myco, het_myco)]
+#  sub <- aggregate(. ~ PLT_CN, data = sub, FUN = sum, na.rm = T)
+#  #to_return <- merge(k, sub, all.x = T)
+#  con.het_output[[i]] <- sub
+#}
+#names(con.het_output) <- spp_list
 
 
 #generate lists of myc types and PFTs.-----
@@ -108,12 +125,6 @@ for(i in 1:length(data.list)){
 #if you are currently dead, your current basal area is assigned NA
 for(i in 1:length(data.list)){
   data.list[[i]]$BASAL <- ifelse(!is.na(data.list[[i]]$AGENTCD), NA, data.list[[i]]$BASAL)
-}
-
-#current and previous basal area in cm2
-for(i in 1:length(data.list)){
-  data.list[[i]][,BASAL    := pi*((2.54*DIA    )/2)^2]
-  data.list[[i]][,PREVBASAL:= pi*((2.54*PREVDIA)/2)^2]
 }
 
 #calculate current basal area of all trees by mycorrhizal type and PFT
@@ -135,11 +146,11 @@ for(i in 1:length(data.list)){
 }
 
 #begin aggregation of tree-level data to plot level. 
-scaled.list <- list()
-for(i in 1:length(data.list)){
+scaled.list <-
+foreach(i = 1:length(data.list)) %dopar% {
   scaled <- aggregate(data.list[[i]]$BASAL ~ data.list[[i]]$PLT_CN, FUN = 'sum', na.rm = T, na.action = na.pass)
   names(scaled) <- c('PLT_CN','plot.BASAL')
-  scaled.list[[i]] <- data.table(scaled)
+  return(data.table(scaled))
 }
 names(scaled.list) <- names(data.list)
 
@@ -199,7 +210,7 @@ saveRDS(time_series,time_series_dat.path)
 ##### Product 2. Individual-level Growth and Mortality data ######
 ##################################################################
 
-#Mortality is modeled at the tree level. Take most recent data.
+#Growth and Mortality is modeled at the individual tree level. Take most recent data.
 mort.list <- list(data.list[[2]], data.list[[4]])
 
 #flag whether a tree died or not, for any reason. If it did, there will be a value associated with "AGENTCD" grater than 0.
@@ -224,6 +235,46 @@ for(i in 1:length(mort.list)){
 for(i in 1:length(mort.list)){
   mort.list[[i]] <- mort.list[[i]][!(is.na(PREV_PLT_CN)),]
   mort.list[[i]] <- mort.list[[i]][!(REMPER == 0),]
+}
+
+#For each tree, cacluate the density of con vs. hetersopecific species and mycorrhizal types within the plot.----
+#2 processors does this in ~1.1 minutes for the first data set of ~23k rows.
+#estimated ~25.85 minutes for full data set (the two most recent samplings).
+#or ~1.4 minutes using 36 processors.
+for(i in 1:length(mort.list)){
+  dat <- mort.list[[i]]         #grab a data product out of the list.
+  plots <- unique(dat$PLT_CN)   #grab the unique sites within the prdocut.
+  #grab a specific plot - plots within dataset processed in parallel.
+  tic()
+  dat.return <- 
+    foreach(j = 1:length(plots)) %dopar% {
+      plot <- dat[dat$PLT_CN == plots[j],]
+      #go through every tree within that plot, calculating conspecific/heterospecific density or basal area.
+      plot.return <- list()
+      for(k in 1:nrow(plot)){
+        spp <- plot[k,]$SPCD
+        myc <- plot[k,]$MYCO_ASSO
+        conspec.dens <- nrow(plot[AGENTCD == 0 & plot$SPCD      == spp,])
+        hetspec.dens <- nrow(plot[AGENTCD == 0 & plot$SPCD      != spp,])
+        conmyco.dens <- nrow(plot[AGENTCD == 0 & plot$MYCO_ASSO == myc,])
+        hetmyco.dens <- nrow(plot[AGENTCD == 0 & plot$MYCO_ASSO != myc,])
+        conspec.basal <- sum(plot[AGENTCD == 0 & plot$SPCD      == spp,]$BASAL, na.rm = T)
+        hetspec.basal <- sum(plot[AGENTCD == 0 & plot$SPCD      != spp,]$BASAL, na.rm = T)
+        conmyco.basal <- sum(plot[AGENTCD == 0 & plot$MYCO_ASSO == myc,]$BASAL, na.rm = T)
+        hetmyco.basal <- sum(plot[AGENTCD == 0 & plot$MYCO_ASSO != myc,]$BASAL, na.rm = T)
+        plot.results <- c(conspec.dens,hetspec.dens,conmyco.dens,hetmyco.dens,
+                          conspec.basal,hetspec.basal,conmyco.basal,hetmyco.basal)
+        plot.return[[k]] <- plot.results
+      }
+      plot.return <- do.call(rbind, plot.return)
+      return(plot.return)
+    }
+  toc()
+  dat.return <- do.call(rbind, dat.return)
+  colnames(dat.return) <- c('conspec.dens', 'hetspec.dens', 'conmyco.dens', 'hetmyco.dens',
+                            'conspec.basal','hetspec.basal','conmyco.basal','hetmyco.basal')
+  dat <- cbind(dat, dat.return)
+  mort.list[[i]] <- dat
 }
 
 #Break out all and soils subset.
