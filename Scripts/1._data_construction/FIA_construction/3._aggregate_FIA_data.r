@@ -73,6 +73,7 @@ for(i in 1:length(data.list)){
 }
 
 #####Product 1. Basal area of each plot paired with soils######
+cat('Building plot-level product 1 and time series...\n')
 #Calculate number of species in each plot.----
 for(i in 1:length(data.list)){
   data.list[[i]][, spp.count := uniqueN(SPCD), by = PLT_CN]
@@ -124,7 +125,7 @@ for(i in 1:length(data.list)){
 
 #if you are currently dead, your current basal area is assigned NA
 for(i in 1:length(data.list)){
-  data.list[[i]]$BASAL <- ifelse(!is.na(data.list[[i]]$AGENTCD), NA, data.list[[i]]$BASAL)
+  data.list[[i]]$BASAL <- ifelse(data.list[[i]]$AGENTCD > 0, NA, data.list[[i]]$BASAL)
 }
 
 #calculate current basal area of all trees by mycorrhizal type and PFT
@@ -145,7 +146,7 @@ for(i in 1:length(data.list)){
   }
 }
 
-#begin aggregation of tree-level data to plot level. 
+#begin aggregation of tree-level data to plot level.----
 scaled.list <-
 foreach(i = 1:length(data.list)) %dopar% {
   scaled <- aggregate(data.list[[i]]$BASAL ~ data.list[[i]]$PLT_CN, FUN = 'sum', na.rm = T, na.action = na.pass)
@@ -205,10 +206,12 @@ time_series <- list(scaled.list[['a.FIA.2']],
                     scaled.list[['past3']])
 names(time_series) <- c('present','past1','past2','past3')
 saveRDS(time_series,time_series_dat.path)
+cat('Plot level Product 1 and time series plot level data sets constructed.\n')
 
 ##################################################################
 ##### Product 2. Individual-level Growth and Mortality data ######
 ##################################################################
+cat('Building individual level product 2...\n')
 
 #Growth and Mortality is modeled at the individual tree level. Take most recent data.
 mort.list <- list(data.list[[2]], data.list[[4]])
@@ -289,6 +292,7 @@ Product_2.soil <- merge(Product_2.soil,  Product_1.soil[,.(relEM,relEM.AM,plot.B
 #save the output! Tree-level mortality data paired with soils!
 saveRDS(Product_2     , Product_2.path     )
 saveRDS(Product_2.soil, Product_2.soil.path)
+cat('Finished constructing individual level Product 2.\')
 
 ############################################################
 #####      Product 3. Plot-level Recruitment Data     ######

@@ -118,7 +118,7 @@ revisit.soil <- data.frame(b.soil)
 #build an empty data.table to store output. 
 variables_to_extract <- c('cn','prev_tre_cn','plt_cn','invyr','condid','dia','tpa_unadj','carbon_ag','carbon_bg',
                           'spcd','stocking','statuscd','prevdia','prev_status_cd','p2a_grm_flg','reconcilecd',
-                          'agentcd','tpamort_unadj','diahtcd','ht','htcd','actualht')
+                          'agentcd','tpamort_unadj','diahtcd','ht','htcd','actualht','cclcd')
 out <- data.frame(matrix(NA, nrow = 0, ncol = length(variables_to_extract)))
 colnames(out) <- variables_to_extract
 out <- data.table(out)
@@ -134,15 +134,14 @@ tic()
 for(i in 1:length(states)){
   query = paste('select CN, PREV_TRE_CN, PLT_CN, INVYR, CONDID, DIA, TPA_UNADJ, CARBON_AG, CARBON_BG,
               SPCD, STOCKING, STATUSCD, PREVDIA, PREV_STATUS_CD, P2A_GRM_FLG, RECONCILECD, AGENTCD, TPAMORT_UNADJ,
-              DIAHTCD, HT, HTCD, ACTUALHT
+              DIAHTCD, HT, HTCD, ACTUALHT, CCLCD
                 from TREE 
                 WHERE (PREVDIA>5 OR DIA>5) AND (STATUSCD=1 OR PREV_STATUS_CD=1) AND 
                 STATECD IN (', paste(states[i],collapse=','), ')')
   pre.tree = as.data.table(dbGetQuery(con, query))
   out <- rbind(out,pre.tree)
-  cat(paste0(i,' of ',length(states),' states queried.\n'))
+  cat(paste0(i,' of ',length(states),' states queried.\n'));toc()
 }
-toc()
 TREE <-out
 
 #how many plots and trees?

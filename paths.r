@@ -17,6 +17,7 @@ historic_contemporary_merge.path <- paste0(storage.dir,'paleon_historic_contempo
 
 #model output paths
 model.output.path <- paste0(storage.dir,'model_output.rds')
+  stage_fits.path <- paste0(storage.dir,'stage_fits.rds')
 
 #JAGS model output paths.
 historic_contemporary_EM_spatial.path <- paste0(storage.dir,'historic_contemporary_EM_spatial.path')

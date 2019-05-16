@@ -5,7 +5,7 @@
 rm(list=ls())
 library(data.table)
 source('paths.r')
-d <- data.table(readRDS(Product_2.path))
+d <- data.table(readRDS(Product_2.path)) 
 d$em <- ifelse(d$MYCO_ASSO == 'ECM',1,0)
 d <- d[n.trees >  5,]
 d <- d[!(REMPER == 0)]
