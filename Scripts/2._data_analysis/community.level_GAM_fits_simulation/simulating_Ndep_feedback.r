@@ -3,6 +3,7 @@
 rm(list=ls())
 source('paths.r')
 source('project_functions/forest.sim.r')
+source('project_functions/tic_toc.r')
 library(mgcv)
 library(doParallel)
 library(data.table)
@@ -27,6 +28,7 @@ ndep.range <- seq(1,20)
 #run the simulations!----
 out.nul <- list()
 out.alt <- list()
+tic()
 for(i in 1:length(ndep.range)){
   env.cov['ndep'] <- ndep.range[i]
   out.nul[[i]] <- forest.sim(g.mod    = fits$n.feedback$G.mod, 
@@ -34,7 +36,7 @@ for(i in 1:length(ndep.range)){
                              r.mod.am = fits$n.feedback$R.mod.am, 
                              r.mod.em = fits$n.feedback$R.mod.em,
                              env.cov = env.cov, 
-                             myco.split = 'between_plot',
+                             myco.split = 'between_plot', silent = T,
                              n.plots = 1000,
                              n.cores = n.cores)
   out.alt[[i]] <- forest.sim(g.mod    = fits$y.feedback$G.mod, 
@@ -42,10 +44,11 @@ for(i in 1:length(ndep.range)){
                              r.mod.am = fits$y.feedback$R.mod.am, 
                              r.mod.em = fits$y.feedback$R.mod.em,
                              env.cov = env.cov, 
-                             myco.split = 'between_plot',
+                             myco.split = 'between_plot', silent = T,
                              n.plots = 1000,
                              n.cores = n.cores)
-  cat(i,'of',length(ndep.range),'levels of N deposition simulated.\n')
+  cat(i,'of',length(ndep.range),'levels of N deposition simulated. ')
+  toc()
 }
 
 #wrap, name and return output.----

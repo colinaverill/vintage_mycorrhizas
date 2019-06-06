@@ -1,6 +1,6 @@
 forest.sim <- function(g.mod, r.mod.am, r.mod.em, m.mod, 
                        initial_density = 20, n.plots = 100, n.step = 20, 
-                       env.cov = NA, n.cores = NA,
+                       env.cov = NA, n.cores = NA, silent = F,
                        myco.split = 'within_plot'){
   #Compatibility tests.----
   #Check if doParallel is installed.
@@ -136,9 +136,11 @@ forest.sim <- function(g.mod, r.mod.am, r.mod.em, m.mod,
     super.table[[t+1]] <- plot.table
     
     #4. end time step and report.----
-    current_time <- t*5
-    talk <- paste0(current_time,' years of simulation complete.\n')
-    cat(talk)
+    if(silent == F){
+      current_time <- t*5
+      talk <- paste0(current_time,' years of simulation complete.\n')
+      cat(talk)
+    }
   }
   #return simulation output.
   output <- list(plot.table, super.table)
