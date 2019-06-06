@@ -133,7 +133,7 @@ forest.sim <- function(g.mod, r.mod.am, r.mod.em, m.mod,
     }
     plot.table <- data.frame(do.call(rbind, plot.table))
     #update super table.
-    super.table[[i+1]] <- plot.table
+    super.table[[t+1]] <- plot.table
     
     #4. end time step and report.----
     current_time <- t*5
