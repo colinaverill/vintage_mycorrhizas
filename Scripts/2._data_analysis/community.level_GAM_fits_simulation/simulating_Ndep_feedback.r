@@ -23,7 +23,7 @@ env.cov <- fits$env.cov
 n.cores <- detectCores()
 
 #Specify ndep.range.----
-ndep.range <- seq(1,20)
+ndep.range <- seq(1,15)
 
 #run the simulations!----
 out.nul <- list()
