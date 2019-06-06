@@ -1,6 +1,5 @@
 #Fit growth, mortality and recruitment models for simulation modeling.
 rm(list=ls())
-library(IPMpack)
 library(data.table)
 source('paths.r')
 
@@ -25,10 +24,16 @@ d$recruit <- ifelse(is.na(d$PREVDIA.cm), 1, 0)
 d <- d[d$REMPER >=4.9 & d$REMPER <= 5.1,]
 
 #Generate recruitment data object.----
-R.dat              <- aggregate(recruit ~ PLT_CN, data = d, FUN = sum   )
-R.dat$BASAL.plot   <- aggregate(  BASAL ~ PLT_CN, data = d, FUN = sum   )[,2]
-R.dat$stem.density <- aggregate(    DIA ~ PLT_CN, data = d, FUN = length)[,2]
-R.dat$recr.binom <- ifelse(R.dat$recruit == 0, 0, 1)
+#BE CAREFUL - do not count new recruits in inital metrics of density and basal area.
+#This drops a few sites that are all recruits.
+R.dat <- aggregate(  BASAL ~ PLT_CN, data = d[d$recruit == 0,], FUN = sum)
+d <- d[d$PLT_CN %in% R.dat$PLT_CN,]
+recruit              <- aggregate(recruit ~ PLT_CN, data = d, FUN = sum   )
+stem.density         <- aggregate(    DIA ~ PLT_CN, data = d[d$recruit == 0,], FUN = length)
+R.dat <- merge(R.dat, recruit)
+R.dat <- merge(R.dat, stem.density)
+colnames(R.dat)[2] <- 'BASAL.plot'
+colnames(R.dat)[4] <- 'stem.density'
 
 #Merge plot basal area and stemp density into individual level tree object.
 d <- merge(d, R.dat, all.x = T)
@@ -47,7 +52,7 @@ for(i in 1:n.break){
   finish <- start + inc
   breaks[[i]] <- c(start, finish)
   if(i == n.break){
-    breaks[[i]] <- c(50.8, 114.3)
+    breaks[[i]] <- c(50.8, 1000)
   }
 }
 
@@ -56,14 +61,16 @@ G.mod <- list()
 M.mod <- list()
 for(i in 1:length(breaks)){
   dat <- d[d$PREVDIA.cm >= breaks[[i]][1] & d$PREVDIA.cm < breaks[[i]][2],]
-  G.mod[[i]] <-  lm(DIA.cm    ~ PREVDIA.cm + BASAL.plot + stem.density, data = dat[DIA.cm > 0,]) #DIA constraint to only include trees that grew and did not die.
-  M.mod[[i]] <- glm(mortality ~ PREVDIA.cm + BASAL.plot + stem.density, data = dat, family = 'binomial')
+  #G.mod[[i]] <-  lm(DIA.cm    ~ PREVDIA.cm + BASAL.plot + stem.density, data = dat[DIA.cm > 0,]) #DIA constraint to only include trees that grew and did not die.
+  #M.mod[[i]] <- glm(mortality ~ PREVDIA.cm + BASAL.plot + stem.density, data = dat, family = 'binomial')
+  G.mod[[i]] <- mgcv::gam(DIA.cm    ~ s(PREVDIA.cm) + s(BASAL.plot) + s(stem.density), data = d[DIA.cm > 0,])
+  M.mod[[i]] <- mgcv::gam(mortality ~ s(PREVDIA.cm) + s(BASAL.plot) + s(stem.density), data = d, family = 'binomial')
 }
 
 
 #Fit recruitment models.----
 #Using a gam, its really much easier than the zero-inflated, and seems to fit the data much better.
-R.mod <- mgcv::gam(recruit ~ BASAL.plot + stem.density, data = R.dat)
+R.mod <- mgcv::gam(recruit ~ s(BASAL.plot) + s(stem.density), data = R.dat, family = 'poisson')
 
 #Save models and size categories.----
 output <- list(breaks, G.mod, R.mod, M.mod)

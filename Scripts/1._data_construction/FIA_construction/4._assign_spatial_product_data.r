@@ -1,9 +1,9 @@
 #Assign mat, map and n-deposition to sites.
 rm(list=ls())
 library(data.table)
-require(raster)
-require(rgdal)
-require(sp)
+library(raster)
+library(rgdal)
+library(sp)
 detach("package:runjags", unload=TRUE) #make sure runjags is not loaded.
 source('required_products_utilities/extract_ndep.r')
 source('required_products_utilities/prism_query.r')
@@ -12,8 +12,8 @@ source('required_products_utilities/worldclim2_grab.r')
 source('paths.r')
 
 
-p1 <- readRDS(Product_1.path)
-p2 <- readRDS(Product_2.path)
+p1 <- data.table(readRDS(Product_1.path))
+p2 <- data.table(readRDS(Product_2.path))
 p3 <- readRDS(Product_3.path); p3 <- data.table(p3)
 #soil paths.
 p1.soil <- readRDS(Product_1.soil.path)
@@ -41,8 +41,8 @@ p3.soil <- cbind(p3.soil, extract_ndep(p3.soil$longitude, p3.soil$latitude))
 #pull worldclim2 climate data and aridity
 p1 <- cbind(p1,worldclim2_grab(p1$latitude,p1$longitude))
 p1$aridity <- arid_extract(p1$latitude,p1$longitude)
-p2 <- merge(p2, p1[,.(PLT_CN,mat,map,mat_CV,map_CV,mat_sd,map_sd,mdr,aridity)])
-p3 <- merge(p3, p1[,.(PLT_CN,mat,map,mat_CV,map_CV,mat_sd,map_sd,mdr,aridity)])
+p2 <- merge(p2, p1[,.(PLT_CN,mat,map,mat_CV,map_CV,mdr,aridity)])
+p3 <- merge(p3, p1[,.(PLT_CN,mat,map,mat_CV,map_CV,mdr,aridity)])
 p1.soil <- cbind(p1.soil, worldclim2_grab(p1.soil$latitude, p1.soil$longitude))
 p2.soil <- cbind(p2.soil, worldclim2_grab(p2.soil$LAT     , p2.soil$LON      ))
 p3.soil <- cbind(p3.soil, worldclim2_grab(p3.soil$latitude, p3.soil$longitude))

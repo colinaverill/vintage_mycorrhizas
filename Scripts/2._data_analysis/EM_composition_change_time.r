@@ -127,3 +127,4 @@ for(i in 1:nrow(d)){
   if(d$pval[i] > 0.05 & d$slope[i] < 0){lines(x, y, col = 'gray')}
 }
 abline(h = 0.5, lwd = 2, lty = 2)
+

@@ -1,6 +1,7 @@
 rm(list=ls())
 library(IPMpack)
 library(data.table)
+library(mgcv)
 source('paths.r')
 
 #load growth/mortality data.----
@@ -43,10 +44,12 @@ for(i in 1:length(breaks)){
   mod <- glm(mortality ~ PREVDIA, data = d[d$PREVDIA >= start & d$PREVDIA < finish,], family = 'binomial')
   mo.mod[[i]] <- mod
 }
+g.mod <- gam(mortality ~ s(PREVDIA), data = d, family = 'binomial')
 
 #See how growth changes continously with these bins.----
 x <- list()
 y <- list()
+y2 <- list()
 for(i in 1:length(mo.mod)){
   start <- breaks[[i]][1]
   finish <- breaks[[i]][2]
@@ -54,9 +57,11 @@ for(i in 1:length(mo.mod)){
   pred <- predict(mo.mod[[i]], newdata = x.bin)
   x[[i]] <- as.vector(x.bin)
   y[[i]] <- pred
+  y2[[i]] <- predict(g.mod, newdata = x.bin)
 }
 y <- unlist(y)
 x <- unlist(x)
+y2 <- unlist(y2)
 #inc <- y - x
 
 
@@ -80,4 +85,4 @@ colnames(mort.obs) <- c('DIA','mort')
 #plot it.----
 plot(mort ~ DIA, data = mort.obs, ylim = c(0.04, 0.12), xlim = c(5,50))
 par(new = T)
-plot(boot::inv.logit(y) ~ x, axes = F, ylab = NA, xlab = NA, ylim = c(0.04, 0.12), xlim = c(5,50), col = 'purple')
+plot(boot::inv.logit(y2) ~ x, axes = F, ylab = NA, xlab = NA, ylim = c(0.04, 0.12), xlim = c(5,50), col = 'purple')

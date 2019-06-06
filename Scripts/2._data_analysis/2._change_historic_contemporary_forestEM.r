@@ -32,25 +32,35 @@ mod <- betareg(c.relEM ~ logit(h.relEM) * n.dep +
                          n.dep*mat30 +
                  mat30*map30 + mat.delta + map.delta, data = d)
 null.mod <- betareg(c.relEM ~ logit(h.relEM), data = d)
+ env.mod <- betareg(c.relEM ~ n.dep + mat30 + map30 + mat.delta + map.delta, data = d)
 #THE FORESTS ARE LESS EM RELATIVE TO HISTORIC OVERALL, AND MORE SO WITH HIGH N-DEP. Depends on initial forest state. More ecto places seem more resistant to N-dep.
 
 #generate figures
+ 
+#1. Betareg env, bio, env+bio fits.----
 #compare model fit to only historic relative abundace vs. model fit to historic relative abundance and environmental factors.
-par(mfrow = c(1,2))
+par(mfrow = c(1,3), mar = c(2,0,2,0), oma = c(2,4,2,0.5))
+#environment only
+plot(d$c.relEM ~ fitted(env.mod), cex = 0.3, main = 'environment only', bty = 'l')
+abline(lm(d$c.relEM ~ fitted(env.mod)), lwd = 3)
+r.sq <- summary(lm(d$c.relEM ~ fitted(env.mod)))$r.squared
+mtext(paste('R2 =',round(r.sq,2)), side = 1, adj = 0.95, line = -1.7)
+mtext('Conetemporary rel.EM observed', side = 2, line = 2.5)
+
 #biological history only.
-plot(d$c.relEM ~ fitted(null.mod), cex = 0.3, ylab = 'contemporary rel.EM observed', xlab = 'contemporary rel.EM predicted',main = 'biological only')
-abline(lm(d$c.relEM ~ fitted(null.mod)), lwd = 4)
+plot(d$c.relEM ~ fitted(null.mod), cex = 0.3, ylab = NA, xlab = NA, yaxt = 'n', main = 'biological only', bty = 'l')
+abline(lm(d$c.relEM ~ fitted(null.mod)), lwd = 3)
 r.sq <- summary(lm(d$c.relEM ~ fitted(null.mod)))$r.squared
 mtext(paste('R2 =',round(r.sq,2)), side = 1, adj = 0.95, line = -1.7)
 #biological history + environment.
-plot(d$c.relEM ~ fitted(mod), cex = 0.3, ylab = 'contemporary rel.EM observed', xlab = 'contemporary rel.EM predicted',main = 'biological + environment')
-abline(lm(d$c.relEM ~ fitted(mod)), lwd = 4)
+plot(d$c.relEM ~ fitted(mod), cex = 0.3, ylab = NA, xlab = NA, yaxt = 'n',main = 'biological + environment', bty = 'l')
+abline(lm(d$c.relEM ~ fitted(mod)), lwd = 3)
 r.sq <- summary(lm(d$c.relEM ~ fitted(mod) ))$r.squared
 mtext(paste('R2 =',round(r.sq,2)), side = 1, adj = 0.95, line = -1.7)
+mtext('Predicted rel.EM', side = 1, outer = T, line = 1)
 
 
-
-#How does the effect of N deposition vary based on historical composition of the forest?
+#How does the effect of N deposition vary based on historical composition of the forest?----
 #Are places that were more EM historically more resistant to N-deposition induced shifts to AM?
 #generate predicted data across Ndep range at different levels of historic relEM.
 pred.data.20 <- data.frame(seq(6.7,20,by = 0.2),

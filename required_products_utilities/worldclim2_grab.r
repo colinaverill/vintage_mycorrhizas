@@ -23,6 +23,7 @@
 #' test.out <- worldclim2_grab(points[,2], points[,1])
 
 worldclim2_grab <- function(latitude,longitude,elev = 500, n.sim = 1000,
+                            uncertainty_estimate = F,
                             worldclim2_folder = '/fs/data3/caverill/WorldClim2/'){
   
   #make points an object
@@ -35,9 +36,6 @@ worldclim2_grab <- function(latitude,longitude,elev = 500, n.sim = 1000,
   prec_CV <- raster::raster(paste0(worldclim2_folder,'wc2.0_bio_30s_15.tif'))
   mdr     <- raster::raster(paste0(worldclim2_folder,'wc2.0_bio_30s_02.tif'))
   
-  #load runjags summaries of precipitation and temperature fitted vs. observed.
-  prec.jags <- readRDS('/fs/data3/caverill/NEFI_microbial_data/worldclim2_uncertainty/precipitation_JAGS_model.rds')
-  temp.jags <- readRDS('/fs/data3/caverill/NEFI_microbial_data/worldclim2_uncertainty/temperature_JAGS_model.rds')
   
   #extract worldclim2 predicted climate data.
      prec.obs <- raster::extract(prec, points)
@@ -46,37 +44,51 @@ worldclim2_grab <- function(latitude,longitude,elev = 500, n.sim = 1000,
   temp_CV.obs <- raster::extract(temp_CV, points)
       mdr.obs <- raster::extract(    mdr, points)
   
-  #temperature uncertainty workup. Draw from paramters n.sim times, calcualte predicted sd.
-  temp.list <- list()
-  for(i in 1:n.sim){
+  #wrap output to return.
+  to_return <- data.frame(cbind(prec.obs,temp.obs,prec_CV.obs,temp_CV.obs,mdr.obs))
+  colnames(to_return) <- c('map','mat','map_CV','mat_CV','mdr')
+      
+  
+  if(uncertainty_estimate == T){
+    #load runjags summaries of precipitation and temperature fitted vs. observed.
+    prec.jags <- readRDS('/fs/data3/caverill/NEFI_microbial_data/worldclim2_uncertainty/precipitation_JAGS_model.rds')
+    temp.jags <- readRDS('/fs/data3/caverill/NEFI_microbial_data/worldclim2_uncertainty/temperature_JAGS_model.rds')
+    
+    #temperature uncertainty workup. Draw from paramters n.sim times, calcualte predicted sd.
+    temp.list <- list()
+    for(i in 1:n.sim){
       intercept <- rnorm(1,temp.jags[1,4], temp.jags[1,5])
-          slope <- rnorm(1,temp.jags[2,4], temp.jags[2,5])
-             sd <- rnorm(1,temp.jags[3,4], temp.jags[3,5])
-       pred.obs <- intercept + slope*temp.obs       
-       pred.out <- rnorm(length(pred.obs),pred.obs,sd)
-       temp.list[[i]] <- pred.out
-  }
-  temp.list <- do.call('cbind',temp.list)
+      slope <- rnorm(1,temp.jags[2,4], temp.jags[2,5])
+      sd <- rnorm(1,temp.jags[3,4], temp.jags[3,5])
+      pred.obs <- intercept + slope*temp.obs       
+      pred.out <- rnorm(length(pred.obs),pred.obs,sd)
+      temp.list[[i]] <- pred.out
+    }
+    temp.list <- do.call('cbind',temp.list)
     temp.sd <- apply(temp.list,1, sd, na.rm = TRUE)
     
-  #precipitation uncertainty workup. Draw from parameters n.sim times, calcualte predicted sd.
+    #precipitation uncertainty workup. Draw from parameters n.sim times, calcualte predicted sd.
     prec.list <- list()
     for(i in 1:n.sim){
-          intercept <- rnorm(1,prec.jags[1,4], prec.jags[1,5])
-              slope <- rnorm(1,prec.jags[2,4], prec.jags[2,5])
-             sd.int <- rnorm(1,prec.jags[3,4], prec.jags[3,5])
+      intercept <- rnorm(1,prec.jags[1,4], prec.jags[1,5])
+      slope <- rnorm(1,prec.jags[2,4], prec.jags[2,5])
+      sd.int <- rnorm(1,prec.jags[3,4], prec.jags[3,5])
       sd.elev.slope <- rnorm(1,prec.jags[4,4], prec.jags[4,5])
-           pred.obs <- intercept + prec.obs*slope
-            pred.sd <- sd.int + elev*sd.elev.slope
-           pred.out <- rnorm(length(pred.obs),pred.obs,pred.sd)
-     prec.list[[i]] <- pred.out
+      pred.obs <- intercept + prec.obs*slope
+      pred.sd <- sd.int + elev*sd.elev.slope
+      pred.out <- rnorm(length(pred.obs),pred.obs,pred.sd)
+      prec.list[[i]] <- pred.out
     }
     prec.list <- do.call('cbind',prec.list)
-      prec.sd <- apply(prec.list, 1, sd, na.rm = T)
+    prec.sd <- apply(prec.list, 1, sd, na.rm = T)
+    
+    #Wrap output to return.
+    to_return <- data.frame(cbind(prec.obs,prec.sd,temp.obs,temp.sd,prec_CV.obs,temp_CV.obs,mdr.obs))
+    colnames(to_return) <- c('map','map_sd','mat','mat_sd','map_CV','mat_CV','mdr')
+    
+  }
       
-  #wrap up output and return.
-  to_return <- data.frame(cbind(prec.obs,prec.sd,temp.obs,temp.sd,prec_CV.obs,temp_CV.obs,mdr.obs))
-  colnames(to_return) <- c('map','map_sd','mat','mat_sd','map_CV','mat_CV','mdr')
+  #return output.
   return(to_return)
   
 } #end function.

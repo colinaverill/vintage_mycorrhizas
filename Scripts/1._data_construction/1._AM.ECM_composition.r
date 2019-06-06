@@ -57,7 +57,7 @@ contemporary <- contemporary[cell %in% historic$cell,]
 #assign mycorrhizal associations
 spp <- colnames(historic)[6:27]
 #still unsure on Salix (willow) for North America. Need species level list. 
-h.em <- c(0,0,1,1,1,0,1,1,1,1,1,1,1,0,1,NA,1,0,1,1,0,NA)
+h.em <- c(0,0,1,1,1,0,0,0,1,0,1,1,1,0,1,NA,1,0,1,1,0,NA)
 h.am <- 1 - h.em
 historic.basal <- historic[,6:27]
 historic.em <- t(t(historic.basal)*h.em)

@@ -6,12 +6,12 @@ extract_ndep <- function(longitude,latitude){
   #load dry deposition rasters
   dry.list <- list()
   for(i in 0:15){
-    dry.list[[i+1]] <- raster(paste0('/fs/data3/caverill/CASTNET_Ndep/dry_dep/n_dw-',2000 + i,'.e00'))
+    dry.list[[i+1]] <- raster::raster(paste0('/fs/data3/caverill/CASTNET_Ndep/dry_dep/n_dw-',2000 + i,'.e00'))
   }
   #load wet deposition rasters
   wet.list <- list()
   for(i in 0:15){
-    wet.list[[i+1]] <- raster(paste0('/fs/data3/caverill/CASTNET_Ndep/wet_dep/n_ww-',2000 + i,'.e00'))
+    wet.list[[i+1]] <- raster::raster(paste0('/fs/data3/caverill/CASTNET_Ndep/wet_dep/n_ww-',2000 + i,'.e00'))
   }
   
   #Fix the crs of each raster.

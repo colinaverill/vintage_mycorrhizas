@@ -18,6 +18,8 @@ historic_contemporary_merge.path <- paste0(storage.dir,'paleon_historic_contempo
 #model output paths
 model.output.path <- paste0(storage.dir,'model_output.rds')
   stage_fits.path <- paste0(storage.dir,'stage_fits.rds')
+myco_gam_fits.path <- paste0(storage.dir, 'myco_gam_fits.rds')
+ spp_gam_fits.path <- paste0(storage.dir,  'spp_gam_fits.rds')
 
 #JAGS model output paths.
 historic_contemporary_EM_spatial.path <- paste0(storage.dir,'historic_contemporary_EM_spatial.path')
@@ -50,3 +52,11 @@ Product_3.path         <- paste0(fia.dir,"Product_3.rds")
 Product_3.soil.path    <- paste0(fia.dir,"Product_3.soil.rds")
 Product_1.all.path     <- paste0(fia.dir,"Product_1.all.rds")
 time_series_dat.path   <- paste0(fia.dir,'time_series_dat.rds')
+
+#Trait databases.----
+dir <- '/fs/data3/caverill/myc_traits/'
+intra_traits.path <- paste0(dir,'merged_intra_traits_names_hand_checked.rds')
+myco_traits.path <- paste0(dir,'merged_myco_traits.rds')
+myco_genera_clean.path <- paste0(dir,'myco_genera_clean.rds')
+nodDB.path <- paste0(dir,'nodDB_v1.csv') #N fixing traits.
+
