@@ -56,5 +56,5 @@ names(out.nul) <- ndep.range
 names(out.alt) <- ndep.range
 output <- list(out.nul, out.alt)
 names(output) <- c('n.feedback','y.feedback')
-saveRDS(output, ouput.path)
+saveRDS(output, output.path)
 
