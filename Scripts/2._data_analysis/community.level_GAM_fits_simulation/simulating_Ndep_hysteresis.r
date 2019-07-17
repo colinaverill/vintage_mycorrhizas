@@ -39,7 +39,7 @@ for(i in 1:length(ndep.range)){
                              env.cov = env.cov, 
                              myco.split = 'between_plot', silent = T,
                              n.plots = 1000, n.step = 40,
-                             n.switch = 20, switch.lev = ndep.range[i],
+                             step.switch = 20, switch.lev = ndep.range[i],
                              n.cores = n.cores)
   out.alt[[i]] <- forest.sim(g.mod    = fits$y.feedback$G.mod, 
                              m.mod    = fits$y.feedback$M.mod,
@@ -48,7 +48,7 @@ for(i in 1:length(ndep.range)){
                              env.cov = env.cov, 
                              myco.split = 'between_plot', silent = T,
                              n.plots = 1000, n.step = 40,
-                             n.switch = 20, switch.lev = ndep.range[i],
+                             step.switch = 20, switch.lev = ndep.range[i],
                              n.cores = n.cores)
   cat(i,'of',length(ndep.range),'levels of N deposition simulated. ')
   toc()
