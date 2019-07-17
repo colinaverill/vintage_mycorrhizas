@@ -13,10 +13,6 @@ output.path <- nul.alt_hysteresis_GAM_ndep_simulation.path
 
 #load models.----
 fits <- readRDS(myco_gam_fits.path)
-g.mod <- fits$y.feedback$G.mod
-m.mod <- fits$y.feedback$M.mod
-r.mod.am <- fits$y.feedback$R.mod.am
-r.mod.em <- fits$y.feedback$R.mod.em
 env.cov <- fits$env.cov
 #Set Ndep to highest level (15) - this is where we want to see the return.
 env.cov['ndep'] <- 15
@@ -25,7 +21,7 @@ env.cov['ndep'] <- 15
 n.cores <- detectCores()
 
 #Specify ndep.reduction range.----
-ndep.range <- seq(14,1)
+ndep.range <- seq(15,1)
 
 #run the simulations!----
 out.nul <- list()
