@@ -23,6 +23,7 @@ myco_gam_fits.path <- paste0(storage.dir, 'myco_gam_fits.rds')
  
 #simulation output paths.
 nul.alt_feedback_GAM_ndep_simulation.path <- paste0(storage.dir,'nul.alt_feedback_GAM_ndep_simulation.rds')
+nul.alt_hysteresis_GAM_ndep_simulation.path <- paste0(storage.dir,'nul.alt_hysteresis_GAM_ndep_simulation.rds')
 
 #JAGS model output paths.
 historic_contemporary_EM_spatial.path <- paste0(storage.dir,'historic_contemporary_EM_spatial.path')

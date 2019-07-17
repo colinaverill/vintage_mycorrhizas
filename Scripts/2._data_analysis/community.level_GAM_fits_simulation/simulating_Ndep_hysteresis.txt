@@ -13,7 +13,7 @@
 #$ -l buyin
 #
 #Give the job a name
-#$ -N feedback_ndep_sim
+#$ -N hysteresis_ndep_sim
 #
 # Merge stderr into the stdout file, to reduce clutter
 #$ -j y
@@ -38,7 +38,7 @@
 module load R/3.4.0
 #
 # Tell the computer to run the R script!
-Rscript Scripts/2._data_analysis/community.level_GAM_fits_simulation/simulating_Ndep_feedback.r
+Rscript Scripts/2._data_analysis/community.level_GAM_fits_simulation/simulating_Ndep_hysteresis.r
 #
 #
 #End of commands.

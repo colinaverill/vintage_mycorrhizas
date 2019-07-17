@@ -9,7 +9,7 @@ library(doParallel)
 library(data.table)
 
 #set output path.----
-output.path <- nul.alt_feedback_GAM_ndep_simulation.path
+output.path <- nul.alt_hysteresis_GAM_ndep_simulation.path
 
 #load models.----
 fits <- readRDS(myco_gam_fits.path)
@@ -18,26 +18,28 @@ m.mod <- fits$y.feedback$M.mod
 r.mod.am <- fits$y.feedback$R.mod.am
 r.mod.em <- fits$y.feedback$R.mod.em
 env.cov <- fits$env.cov
+#Set Ndep to highest level (15) - this is where we want to see the return.
+env.cov['ndep'] <- 15
 
 #register parallel environment.----
 n.cores <- detectCores()
 
-#Specify ndep.range.----
-ndep.range <- seq(1,15)
+#Specify ndep.reduction range.----
+ndep.range <- seq(14,1)
 
 #run the simulations!----
 out.nul <- list()
 out.alt <- list()
 tic()
 for(i in 1:length(ndep.range)){
-  env.cov['ndep'] <- ndep.range[i]
   out.nul[[i]] <- forest.sim(g.mod    = fits$n.feedback$G.mod, 
                              m.mod    = fits$n.feedback$M.mod,
                              r.mod.am = fits$n.feedback$R.mod.am, 
                              r.mod.em = fits$n.feedback$R.mod.em,
                              env.cov = env.cov, 
                              myco.split = 'between_plot', silent = T,
-                             n.plots = 1000,
+                             n.plots = 1000, n.step = 40,
+                             n.switch = 20, switch.lev = ndep.range[i],
                              n.cores = n.cores)
   out.alt[[i]] <- forest.sim(g.mod    = fits$y.feedback$G.mod, 
                              m.mod    = fits$y.feedback$M.mod,
@@ -45,7 +47,8 @@ for(i in 1:length(ndep.range)){
                              r.mod.em = fits$y.feedback$R.mod.em,
                              env.cov = env.cov, 
                              myco.split = 'between_plot', silent = T,
-                             n.plots = 1000,
+                             n.plots = 1000, n.step = 40,
+                             n.switch = 20, switch.lev = ndep.range[i],
                              n.cores = n.cores)
   cat(i,'of',length(ndep.range),'levels of N deposition simulated. ')
   toc()
@@ -56,5 +59,5 @@ names(out.nul) <- ndep.range
 names(out.alt) <- ndep.range
 output <- list(out.nul, out.alt)
 names(output) <- c('n.feedback','y.feedback')
-saveRDS(output, output.path, version = 2)
+saveRDS(output, output.path, version = 2) #version=2 makes R 3.6 backwards compatbile with R 3.4.
 
