@@ -1,5 +1,6 @@
 forest.sim <- function(g.mod, r.mod.am, r.mod.em, m.mod, 
-                       initial_density = 20, n.plots = 100, n.step = 20, 
+                       initial_density = 20, n.plots = 100, n.step = 20,
+                       step.switch = NA, switch.lev = NA, #if changing N level mid run.
                        env.cov = NA, n.cores = NA, silent = F,
                        myco.split = 'within_plot'){
   #Compatibility tests.----
@@ -74,7 +75,7 @@ forest.sim <- function(g.mod, r.mod.am, r.mod.em, m.mod,
   
   #Begin simulation!----
   for(t in 1:n.step){
-    #1. Grow and kill your trees.----
+    #1. Grow and kill your trees. Then recruit new trees.----
     new.plot.list <- list()
     new.plot.list <- 
       foreach(j = 1:length(plot.list)) %dopar% {
@@ -115,7 +116,7 @@ forest.sim <- function(g.mod, r.mod.am, r.mod.em, m.mod,
       } #end parallel plot loop.
     plot.list <- new.plot.list
     
-    #3. Update plot table.----
+    #2. Update plot table.----
     plot.table <- list()
     for(i in 1:length(plot.list)){
       sum <- plot.list[[i]]
@@ -135,11 +136,21 @@ forest.sim <- function(g.mod, r.mod.am, r.mod.em, m.mod,
     #update super table.
     super.table[[t+1]] <- plot.table
     
-    #4. end time step and report.----
+    #3. report time step complete.----
     if(silent == F){
       current_time <- t*5
       talk <- paste0(current_time,' years of simulation complete.\n')
       cat(talk)
+    }
+    #4. Switch N loading if the time is right.----
+    if(!is.na(step.switch)){
+      if(t == step.switch){
+        old <- round(env.cov['ndep'],1)
+        new <- round(switch.lev, 1)
+        env.cov['ndep'] <- switch.lev
+        msg <- paste0('N deposition changed from ',old,' to ',new,' kg N ha-1 yr-1.\n')
+        cat(msg)
+      }
     }
   }
   #return simulation output.
