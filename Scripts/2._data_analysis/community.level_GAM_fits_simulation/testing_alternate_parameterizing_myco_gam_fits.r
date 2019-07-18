@@ -61,7 +61,7 @@ R.dat <- merge(R.dat, BASAL.em)
 R.dat$relEM <- R.dat$BASAL.em / R.dat$BASAL.plot
 
 #Merge plot basal area and stemp density into individual level tree object.
-d <- merge(d, R.dat[,c('PLT_CN','BASAL.plot','stem.density')], all.x = T)
+d <- merge(d, R.dat[,c('PLT_CN','BASAL.plot','stem.density','BASAL.em')], all.x = T)
 
 #Fit growth, recruitment and mortality models.----
 #G.mod <- mgcv::gam(DIA.cm    ~ s(PREVDIA.cm) + s(BASAL.plot) + s(stem.density) + em, data = d[DIA.cm > 0,])
@@ -79,10 +79,10 @@ n.feedback <- list(G.mod, M.mod, R.mod.am, R.mod.em)
 names(n.feedback) <- c('G.mod','M.mod','R.mod.am','R.mod.em')
 
 #Environmental models with feedbacks.----
-G.mod    <- mgcv::gam(DIA.cm    ~ em*relEM + em*ndep + ndep*relEM + te(mat, map) + s(PREVDIA.cm) + s(BASAL.plot) + s(stem.density), data = d[DIA.cm > 0,])
-M.mod    <- mgcv::gam(mortality ~ em*relEM + em*ndep + ndep*relEM + te(mat, map) + s(PREVDIA.cm) + s(BASAL.plot) + s(stem.density), data = d, family = 'binomial')
-R.mod.am <- mgcv::gam(recruit.am ~                     ndep*relEM + te(mat, map) +                 s(BASAL.plot) + s(stem.density), data = R.dat, family = 'poisson')
-R.mod.em <- mgcv::gam(recruit.em ~                     ndep*relEM + te(mat, map) +                 s(BASAL.plot) + s(stem.density), data = R.dat, family = 'poisson')
+G.mod    <- mgcv::gam(DIA.cm    ~ em*log10(BASAL.em) + em*ndep + ndep*log10(BASAL.em) + te(mat, map) + s(PREVDIA.cm) + s(BASAL.plot) + s(stem.density), data = d[DIA.cm > 0,])
+M.mod    <- mgcv::gam(mortality ~ em*log10(BASAL.em) + em*ndep + ndep*log10(BASAL.em) + te(mat, map) + s(PREVDIA.cm) + s(BASAL.plot) + s(stem.density), data = d, family = 'binomial')
+R.mod.am <- mgcv::gam(recruit.am ~                     te(ndep, log10(BASAL.em)) + te(mat, map) +                 s(BASAL.plot) + s(stem.density), data = R.dat, family = 'poisson')
+R.mod.em <- mgcv::gam(recruit.em ~                     te(ndep, log10(BASAL.em)) + te(mat, map) +                 s(BASAL.plot) + s(stem.density), data = R.dat, family = 'poisson')
 y.feedback <- list(G.mod, M.mod, R.mod.am, R.mod.em)
 names(y.feedback) <- c('G.mod','M.mod','R.mod.am','R.mod.em')
 
