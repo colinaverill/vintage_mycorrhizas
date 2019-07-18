@@ -9,12 +9,20 @@ hist(d$y.feedback$`15`$plot.table$relEM)
 #grab relEM abundance under both model types after 100 years.
 relEM.out.n <- list()
 relEM.out.y <- list()
+n.em.1 <- list()
+n.am.1 <- list()
 for(i in 1:length(d$y.feedback)){
   relEM.out.n[[i]] <- mean(d$n.feedback[[i]]$plot.table$relEM)
   relEM.out.y[[i]] <- mean(d$y.feedback[[i]]$plot.table$relEM)
+  em.1 <- d$y.feedback[[i]]$plot.table$relEM
+  am.1 <- d$y.feedback[[i]]$plot.table$relEM
+  n.em.1[[i]] <- length(em.1[em.1 > 0.9])
+  n.am.1[[i]] <- length(am.1[am.1 < 0.1])
 }
 relEM.out.n <- unlist(relEM.out.n)
 relEM.out.y <- unlist(relEM.out.y)
+n.em.1 <- unlist(n.em.1)
+n.am.1 <- unlist(n.am.1)
 
 #repeat with return data.
 z <- readRDS(nul.alt_hysteresis_GAM_ndep_simulation.path)
@@ -43,3 +51,5 @@ lines(smooth.spline(relEM.out.n ~ c(1:15)), lwd = 2, col = 'green')
 #drop return points.
 points(h.EM.n ~ c(15:1), pch = 16, col = 'purple', cex = 2)
 lines(smooth.spline(h.EM.n ~ c(15:1)), lwd = 2, col = 'purple')
+
+
