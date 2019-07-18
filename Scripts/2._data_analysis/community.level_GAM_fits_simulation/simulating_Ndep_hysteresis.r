@@ -12,7 +12,7 @@ library(data.table)
 output.path <- nul.alt_hysteresis_GAM_ndep_simulation.path
 
 #load models.----
-fits <- readRDS(myco_gam_fits.path)
+fits <- readRDS(myco_gam_fits2.path)
 env.cov <- fits$env.cov
 #Set Ndep to highest level (15) - this is where we want to see the return.
 env.cov['ndep'] <- 15

@@ -12,7 +12,7 @@ library(data.table)
 output.path <- nul.alt_feedback_GAM_ndep_simulation.path
 
 #load models.----
-fits <- readRDS(myco_gam_fits.path)
+fits <- readRDS(myco_gam_fits2.path)
 g.mod <- fits$y.feedback$G.mod
 m.mod <- fits$y.feedback$M.mod
 r.mod.am <- fits$y.feedback$R.mod.am

@@ -19,6 +19,7 @@ historic_contemporary_merge.path <- paste0(storage.dir,'paleon_historic_contempo
 model.output.path <- paste0(storage.dir,'model_output.rds')
   stage_fits.path <- paste0(storage.dir,'stage_fits.rds')
 myco_gam_fits.path <- paste0(storage.dir, 'myco_gam_fits.rds')
+myco_gam_fits2.path <- paste0(storage.dir,'myco_gam_fits2.rds')
  spp_gam_fits.path <- paste0(storage.dir,  'spp_gam_fits.rds')
  
 #simulation output paths.
