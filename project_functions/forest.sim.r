@@ -151,7 +151,9 @@ forest.sim <- function(g.mod, r.mod.am, r.mod.em, m.mod,
         new <- round(switch.lev, 1)
         env.cov['ndep'] <- switch.lev
         msg <- paste0('N deposition changed from ',old,' to ',new,' kg N ha-1 yr-1.\n')
-        cat(msg)
+        if(silent == F){
+          cat(msg)
+        }
       }
     }
   }
