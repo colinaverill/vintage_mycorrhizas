@@ -20,7 +20,7 @@ n.cores <- detectCores()
 #Specify Ndep up and down ramp ranges and number of plots.----
 ndep.ramp.range <- seq(1,15)
 ndep.down.range <- rev(ndep.ramp.range)
-N.PLOTS <- 6 #Must be even!
+N.PLOTS <- 1000 #Must be even!
 
 #Run ramp up models.----
 cat('Running null and feedback ramp up simulations...');tic()
