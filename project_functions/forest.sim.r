@@ -52,7 +52,6 @@ forest.sim <- function(g.mod, r.mod.am, r.mod.em, m.mod,
     }
   }
   
-  
   #get plot table with plot level characteristics.
   plot.table <- list()
   for(i in 1:length(plot.list)){
@@ -150,14 +149,14 @@ forest.sim <- function(g.mod, r.mod.am, r.mod.em, m.mod,
         old <- round(env.cov['ndep'],1)
         new <- round(switch.lev, 1)
         env.cov['ndep'] <- switch.lev
-        msg <- paste0('N deposition changed from ',old,' to ',new,' kg N ha-1 yr-1.\n')
+        msg <- paste0('N deposition switched from ',old,' to ',new,' kg N ha-1 yr-1.\n')
         if(silent == F){
           cat(msg)
         }
       }
     }
   }
-  #return simulation output.
+  #return simulation output.----
   output <- list(plot.table, super.table)
   names(output) <- c('plot.table','super.table')
   return(output)

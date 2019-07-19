@@ -7,5 +7,7 @@
 #' @export
 #'
 #' @examples
+#' tic()
+#' toc()
 tic = function() {assign("timer", Sys.time(), envir=.GlobalEnv)}
-toc = function() print(Sys.time()-timer)
+toc = function() print(round(Sys.time()-timer, 2))

@@ -7,6 +7,17 @@ library(mgcv)
 library(doParallel)
 library(data.table)
 
+#make it work function for repeated try loop.----
+makeitwork <- function(x, n = 4){
+  for(k in 1:n){
+    z <- try(x, silent = T)
+    if(class(z) != 'try-error'){
+      return(z)
+      break
+      }
+    if(k == n){cat('All tries failed. bummer.\n')}
+  }
+}
 #set output path.----
 output.path <- factorial_hysteresis_simulation.path
 
@@ -35,39 +46,49 @@ ramp.alt.M   <- list()
 tic() #start timer.
 for(i in 1:length(ndep.ramp.range)){
   env.cov['ndep'] <- ndep.ramp.range[i]
-  ramp.nul[[i]] <- forest.sim(g.mod    = fits$n.feedback$G.mod, 
-                             m.mod    = fits$n.feedback$M.mod,
-                             r.mod.am = fits$n.feedback$R.mod.am, 
-                             r.mod.em = fits$n.feedback$R.mod.em,
-                             env.cov = env.cov, 
-                             myco.split = 'between_plot', silent = T,
-                             n.plots = N.PLOTS,
-                             n.cores = n.cores)
-  ramp.alt.GRM[[i]] <- forest.sim(g.mod    = fits$y.feedback$G.mod, 
-                                  m.mod    = fits$y.feedback$M.mod,
-                                  r.mod.am = fits$y.feedback$R.mod.am, 
-                                  r.mod.em = fits$y.feedback$R.mod.em,
-                                  env.cov = env.cov, 
-                                  myco.split = 'between_plot', silent = T,
-                                  n.plots = N.PLOTS,
-                                  n.cores = n.cores)
-  ramp.alt.GR [[i]] <- forest.sim(g.mod    = fits$y.feedback$G.mod, 
-                                  m.mod    = fits$n.feedback$M.mod, #drop mort feedback.
-                                  r.mod.am = fits$y.feedback$R.mod.am, 
-                                  r.mod.em = fits$y.feedback$R.mod.em,
-                                  env.cov = env.cov, 
-                                  myco.split = 'between_plot', silent = T,
-                                  n.plots = N.PLOTS,
-                                  n.cores = n.cores)
-  ramp.alt.GM [[i]] <- forest.sim(g.mod    = fits$y.feedback$G.mod, 
-                                  m.mod    = fits$y.feedback$M.mod,
-                                  r.mod.am = fits$n.feedback$R.mod.am, #drop recuritment feedback. 
-                                  r.mod.em = fits$n.feedback$R.mod.em, #drop recuritment feedback. 
-                                  env.cov = env.cov, 
-                                  myco.split = 'between_plot', silent = T,
-                                  n.plots = N.PLOTS,
-                                  n.cores = n.cores)
-  ramp.alt.RM [[i]] <- forest.sim(g.mod    = fits$n.feedback$G.mod,   #drop growth feedback.
+  #Null model.
+    ramp.nul[[i]] <- makeitwork(
+                      forest.sim(g.mod    = fits$n.feedback$G.mod, 
+                                 m.mod    = fits$n.feedback$M.mod,
+                                 r.mod.am = fits$n.feedback$R.mod.am, 
+                                 r.mod.em = fits$n.feedback$R.mod.em,
+                                 env.cov = env.cov, 
+                                 myco.split = 'between_plot', silent = T,
+                                 n.plots = N.PLOTS,
+                                 n.cores = n.cores)
+    )
+  ramp.alt.GRM[[i]] <- makeitwork(
+                         forest.sim(g.mod    = fits$y.feedback$G.mod, 
+                                    m.mod    = fits$y.feedback$M.mod,
+                                    r.mod.am = fits$y.feedback$R.mod.am, 
+                                    r.mod.em = fits$y.feedback$R.mod.em,
+                                    env.cov = env.cov, 
+                                    myco.split = 'between_plot', silent = T,
+                                    n.plots = N.PLOTS,
+                                    n.cores = n.cores)
+  )
+  ramp.alt.GR [[i]] <- makeitwork(
+                         forest.sim(g.mod    = fits$y.feedback$G.mod, 
+                                    m.mod    = fits$n.feedback$M.mod, #drop mort feedback.
+                                    r.mod.am = fits$y.feedback$R.mod.am, 
+                                    r.mod.em = fits$y.feedback$R.mod.em,
+                                    env.cov = env.cov, 
+                                    myco.split = 'between_plot', silent = T,
+                                    n.plots = N.PLOTS,
+                                    n.cores = n.cores)
+  )
+  ramp.alt.GM [[i]] <- makeitwork(
+                         forest.sim(g.mod    = fits$y.feedback$G.mod, 
+                                    m.mod    = fits$y.feedback$M.mod,
+                                    r.mod.am = fits$n.feedback$R.mod.am, #drop recuritment feedback. 
+                                    r.mod.em = fits$n.feedback$R.mod.em, #drop recuritment feedback. 
+                                    env.cov = env.cov, 
+                                    myco.split = 'between_plot', silent = T,
+                                    n.plots = N.PLOTS,
+                                    n.cores = n.cores)
+  )
+  ramp.alt.RM [[i]] <- makeitwork(
+                       forest.sim(g.mod    = fits$n.feedback$G.mod,   #drop growth feedback.
                                   m.mod    = fits$y.feedback$M.mod,
                                   r.mod.am = fits$y.feedback$R.mod.am,
                                   r.mod.em = fits$y.feedback$R.mod.em,
@@ -75,6 +96,7 @@ for(i in 1:length(ndep.ramp.range)){
                                   myco.split = 'between_plot', silent = T,
                                   n.plots = N.PLOTS,
                                   n.cores = n.cores)
+  )
   msg <- paste0(i,' of ',length(ndep.ramp.range),' ramp up simulations complete. ')
   cat(msg);toc()
 }
@@ -92,51 +114,73 @@ down.alt.G   <- list()
 down.alt.R   <- list()
 down.alt.M   <- list()
 for(i in 1:length(ndep.down.range)){
-  down.nul[[i]] <- forest.sim(g.mod    = fits$n.feedback$G.mod, 
-                             m.mod    = fits$n.feedback$M.mod,
-                             r.mod.am = fits$n.feedback$R.mod.am, 
-                             r.mod.em = fits$n.feedback$R.mod.em,
-                             env.cov = env.cov, 
-                             myco.split = 'between_plot', silent = T,
-                             n.plots = 1000, n.step = 40,
-                             step.switch = 20, switch.lev = ndep.down.range[i],
-                             n.cores = n.cores)
-  down.alt.GRM[[i]] <- forest.sim(g.mod    = fits$y.feedback$G.mod, 
-                                  m.mod    = fits$y.feedback$M.mod,
-                                  r.mod.am = fits$y.feedback$R.mod.am, 
-                                  r.mod.em = fits$y.feedback$R.mod.em,
+  #Null model.
+      down.nul[[i]] <- makeitwork(
+                       forest.sim(g.mod    = fits$n.feedback$G.mod, 
+                                  m.mod    = fits$n.feedback$M.mod,
+                                  r.mod.am = fits$n.feedback$R.mod.am, 
+                                  r.mod.em = fits$n.feedback$R.mod.em,
                                   env.cov = env.cov, 
                                   myco.split = 'between_plot', silent = T,
-                                  n.plots = N.PLOTS, n.step = 40,
+                                  n.plots = 1000, n.step = 40,
                                   step.switch = 20, switch.lev = ndep.down.range[i],
                                   n.cores = n.cores)
-  down.alt.GR [[i]] <- forest.sim(g.mod    = fits$y.feedback$G.mod, 
-                                  m.mod    = fits$n.feedback$M.mod,    #drop mortality feedback.
-                                  r.mod.am = fits$y.feedback$R.mod.am, 
-                                  r.mod.em = fits$y.feedback$R.mod.em,
-                                  env.cov = env.cov, 
-                                  myco.split = 'between_plot', silent = T,
-                                  n.plots = N.PLOTS, n.step = 40,
-                                  step.switch = 20, switch.lev = ndep.down.range[i],
-                                  n.cores = n.cores)
-  down.alt.GM [[i]] <- forest.sim(g.mod    = fits$y.feedback$G.mod, 
-                                  m.mod    = fits$y.feedback$M.mod,
-                                  r.mod.am = fits$n.feedback$R.mod.am, #drop recruitment feedback.
-                                  r.mod.em = fits$n.feedback$R.mod.em, #drop recruitment feedback.
-                                  env.cov = env.cov, 
-                                  myco.split = 'between_plot', silent = T,
-                                  n.plots = N.PLOTS, n.step = 40,
-                                  step.switch = 20, switch.lev = ndep.down.range[i],
-                                  n.cores = n.cores)
-  down.alt.RM [[i]] <- forest.sim(g.mod    = fits$n.feedback$G.mod,    #drop growth feedback.
-                                  m.mod    = fits$y.feedback$M.mod,
-                                  r.mod.am = fits$y.feedback$R.mod.am, 
-                                  r.mod.em = fits$y.feedback$R.mod.em,
-                                  env.cov = env.cov, 
-                                  myco.split = 'between_plot', silent = T,
-                                  n.plots = N.PLOTS, n.step = 40,
-                                  step.switch = 20, switch.lev = ndep.down.range[i],
-                                  n.cores = n.cores)
+  )
+
+  #feedback GRM model.
+    down.alt.GRM[[i]] <- makeitwork(
+                         forest.sim(g.mod    = fits$y.feedback$G.mod, 
+                                    m.mod    = fits$y.feedback$M.mod,
+                                    r.mod.am = fits$y.feedback$R.mod.am, 
+                                    r.mod.em = fits$y.feedback$R.mod.em,
+                                    env.cov = env.cov, 
+                                    myco.split = 'between_plot', silent = T,
+                                    n.plots = N.PLOTS, n.step = 40,
+                                    step.switch = 20, switch.lev = ndep.down.range[i],
+                                    n.cores = n.cores)
+  )
+
+  #feedback GR model.
+  
+    down.alt.GR [[i]] <- makeitwork(
+                         forest.sim(g.mod    = fits$y.feedback$G.mod, 
+                                    m.mod    = fits$n.feedback$M.mod,    #drop mortality feedback.
+                                    r.mod.am = fits$y.feedback$R.mod.am, 
+                                    r.mod.em = fits$y.feedback$R.mod.em,
+                                    env.cov = env.cov, 
+                                    myco.split = 'between_plot', silent = T,
+                                    n.plots = N.PLOTS, n.step = 40,
+                                    step.switch = 20, switch.lev = ndep.down.range[i],
+                                    n.cores = n.cores)
+  )
+
+  #feedback GM model.
+  
+    down.alt.GM [[i]] <- makeitwork(
+                         forest.sim(g.mod    = fits$y.feedback$G.mod, 
+                                    m.mod    = fits$y.feedback$M.mod,
+                                    r.mod.am = fits$n.feedback$R.mod.am, #drop recruitment feedback.
+                                    r.mod.em = fits$n.feedback$R.mod.em, #drop recruitment feedback.
+                                    env.cov = env.cov, 
+                                    myco.split = 'between_plot', silent = T,
+                                    n.plots = N.PLOTS, n.step = 40,
+                                    step.switch = 20, switch.lev = ndep.down.range[i],
+                                    n.cores = n.cores)
+  )
+
+  #feedback RM model.
+    down.alt.RM [[i]] <- makeitwork(
+                         forest.sim(g.mod    = fits$n.feedback$G.mod,    #drop growth feedback.
+                                    m.mod    = fits$y.feedback$M.mod,
+                                    r.mod.am = fits$y.feedback$R.mod.am, 
+                                    r.mod.em = fits$y.feedback$R.mod.em,
+                                    env.cov = env.cov, 
+                                    myco.split = 'between_plot', silent = T,
+                                    n.plots = N.PLOTS, n.step = 40,
+                                    step.switch = 20, switch.lev = ndep.down.range[i],
+                                    n.cores = n.cores)
+  )
+
   #report.
   cat(i,'of',length(ndep.down.range),'levels of N deposition ramp down simulated. ');toc()
 }
