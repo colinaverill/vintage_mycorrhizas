@@ -4,7 +4,6 @@ source('paths.r')
 source('project_functions/forest.sim.r')
 source('project_functions/tic_toc.r')
 library(mgcv)
-install.packages('doParallel') #needs to be done because scc is forgetting my package installs now.
 library(doParallel)
 library(data.table)
 
@@ -158,6 +157,8 @@ ramp.down <- list(down.nul,
 lab <- paste0('l',ndep.ramp.range)
 for(i in 1:length(ramp.up  )){names(ramp.up  [[i]]) <-     lab }
 for(i in 1:length(ramp.down)){names(ramp.down[[i]]) <- rev(lab)}
+names(ramp.up  ) <- c('nul','alt.GRM','alt.GR','alt.GM','alt.RM')
+names(ramp.down) <- c('nul','alt.GRM','alt.GR','alt.GM','alt.RM')
 output <- list(ramp.up, ramp.down)
 names(output) <- c('ramp.up','ramp.down')
 saveRDS(output, output.path, version = 2) #version=2 makes R 3.6 backwards compatbile with R 3.4.
