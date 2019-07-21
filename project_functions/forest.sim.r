@@ -59,10 +59,12 @@ forest.sim <- function(g.mod, r.mod.am, r.mod.em, m.mod,
     density <- nrow(sum)
     plot.basal <- sum(pi*(sum$DIA.cm/2)^2)
     plot.basal.em <- sum(pi*((sum$em*sum$DIA.cm)/2)^2)
+    em.density <- sum(sum$em)
+    am.density <- length(sum$em) - sum(sum$em)
     relEM <- plot.basal.em / plot.basal
     STDAGE <- 0
-    return <- c(plot.basal, plot.basal.em, density, relEM, STDAGE)
-    names(return) <- c('BASAL.plot','BASAL.em','stem.density','relEM','STDAGE')
+    return <- c(plot.basal, plot.basal.em, density, am.density, em.density, relEM, STDAGE)
+    names(return) <- c('BASAL.plot','BASAL.em','stem.density','am.density','em.density','relEM','STDAGE')
     #add the static environmental covariates in (if you have any).
     if(sum(!is.na(env.cov)) > 0){
       return <- c(return, env.cov)
@@ -121,12 +123,14 @@ forest.sim <- function(g.mod, r.mod.am, r.mod.em, m.mod,
     for(i in 1:length(plot.list)){
       sum <- plot.list[[i]]
       density <- nrow(sum)
+      em.density <- sum(sum$em)
+      am.density <- length(sum$em) - sum(sum$em)
       plot.basal <- sum(pi*(sum$DIA.cm/2)^2)
       plot.basal.em <- sum(pi*((sum$em*sum$DIA.cm)/2)^2)
       relEM <- plot.basal.em / plot.basal
       STDAGE <- t*5
-      return <- c(plot.basal, plot.basal.em, density, relEM, STDAGE)
-      names(return) <- c('BASAL.plot','BASAL.em','stem.density','relEM','STDAGE')
+      return <- c(plot.basal, plot.basal.em, density, am.density, em.density, relEM, STDAGE)
+      names(return) <- c('BASAL.plot','BASAL.em','stem.density','am.density','em.density','relEM','STDAGE')
       #add the static environmental covariates in (if you have any).
       if(sum(!is.na(env.cov)) > 0){
         return <- c(return, env.cov)
