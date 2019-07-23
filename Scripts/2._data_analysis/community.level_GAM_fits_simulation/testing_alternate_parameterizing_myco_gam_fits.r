@@ -19,7 +19,6 @@ d$inc.cm2.yr <- ifelse(d$inc.cm2.yr <= 0, NA, d$inc.cm2.yr)
 d$inc.dia <- (d$DIA - d$PREVDIA)/d$REMPER
 d$inc.dia <- ifelse(d$inc.dia <= 0, NA, d$inc.dia)
 d$inc.dia.cm <- (d$DIA.cm - d$PREVDIA.cm) / d$REMPER
-d$inc
 d$mortality <- ifelse(d$AGENTCD != 0, 1, 0) 
 d$recruit <- ifelse(is.na(d$PREVDIA.cm), 1, 0)
 d$recruit.em <- d$recruit * d$em
@@ -70,22 +69,22 @@ R.dat$am.density.2 <- R.dat$am.density^2
 R.dat$em.density.2 <- R.dat$em.density^2
 
 #Merge plot basal area and stemp density into individual level tree object.
-d <- merge(d, R.dat[,c('PLT_CN','BASAL.plot','stem.density','BASAL.em')], all.x = T)
+d <- merge(d, R.dat[,c('PLT_CN','BASAL.plot','stem.density','am.density','em.density','BASAL.em')], all.x = T)
 
 #Fit growth, recruitment and mortality models.----
 #Environmental models without feedbacks.
-G.mod    <- mgcv::gam(DIA.cm    ~          + em*ndep + ndep       + te(mat, map) + s(PREVDIA.cm) + s(BASAL.plot) + s(stem.density), data = d[DIA.cm > 0,])
-M.mod    <- mgcv::gam(mortality ~          + em*ndep + ndep       + te(mat, map) + s(PREVDIA.cm) + s(BASAL.plot) + s(stem.density), data = d, family = 'binomial')
-R.mod.am <- mgcv::gam(recruit.am ~   am.density*ndep + te(mat, map) + s(BASAL.plot) + s(stem.density), data = R.dat, family = 'poisson')
-R.mod.em <- mgcv::gam(recruit.em ~   em.density*ndep + te(mat, map) + s(BASAL.plot) + s(stem.density), data = R.dat, family = 'poisson')
+G.mod    <- mgcv::gam(DIA.cm    ~            s(ndep, by=em)    + s(mat, k = 3) + s(map, k = 3) + s(PREVDIA.cm) + s(BASAL.plot) + s(stem.density), data = d[DIA.cm > 0,])
+M.mod    <- mgcv::gam(mortality ~            s(ndep, by=em)    + s(mat, k = 3) + s(map, k = 3) + s(PREVDIA.cm) + s(BASAL.plot) + s(stem.density), data = d, family = 'binomial')
+R.mod.am <- mgcv::gam(recruit.am ~ am.density + s(ndep)        + s(mat, k = 3) + s(map, k = 3)                 + s(BASAL.plot) + s(stem.density), data = R.dat, family = 'ziP')
+R.mod.em <- mgcv::gam(recruit.em ~ em.density + s(ndep)        + s(mat, k = 3) + s(map, k = 3)                 + s(BASAL.plot) + s(stem.density), data = R.dat, family = 'ziP')
 n.feedback <- list(G.mod, M.mod, R.mod.am, R.mod.em)
 names(n.feedback) <- c('G.mod','M.mod','R.mod.am','R.mod.em')
 
 #Environmental models with feedbacks.
-G.mod    <- mgcv::gam(DIA.cm    ~ em*relEM + em*ndep + ndep*relEM + te(mat, map) + s(PREVDIA.cm) + s(BASAL.plot) + s(stem.density), data = d[DIA.cm > 0,])
-M.mod    <- mgcv::gam(mortality ~ em*relEM + em*ndep + ndep*relEM + te(mat, map) + s(PREVDIA.cm) + s(BASAL.plot) + s(stem.density), data = d, family = 'binomial')
-R.mod.am <- mgcv::gam(recruit.am ~   am.density*ndep + em.density*ndep + te(mat, map) + s(BASAL.plot) + s(stem.density), data = R.dat, family = 'poisson')
-R.mod.em <- mgcv::gam(recruit.em ~   am.density*ndep + em.density*ndep + te(mat, map) + s(BASAL.plot) + s(stem.density), data = R.dat, family = 'poisson')
+G.mod    <- mgcv::gam(DIA.cm    ~ em*relEM + s(ndep, by=em)    + relEM + s(mat, k = 3) + s(map, k = 3) + s(PREVDIA.cm) + s(BASAL.plot) + s(stem.density), data = d[DIA.cm > 0,])
+M.mod    <- mgcv::gam(mortality ~ em*relEM + s(ndep, by=em)    + relEM + s(mat, k = 3) + s(map, k = 3) + s(PREVDIA.cm) + s(BASAL.plot) + s(stem.density), data = d, family = 'binomial')
+R.mod.am <- mgcv::gam(recruit.am ~ am.density + s(ndep) + relEM + s(mat, k = 3) + s(map, k = 3)                 + s(BASAL.plot) + s(stem.density), data = R.dat, family = 'ziP')
+R.mod.em <- mgcv::gam(recruit.em ~ em.density + s(ndep) + relEM + s(mat, k = 3) + s(map, k = 3)                 + s(BASAL.plot) + s(stem.density), data = R.dat, family = 'ziP')
 y.feedback <- list(G.mod, M.mod, R.mod.am, R.mod.em)
 names(y.feedback) <- c('G.mod','M.mod','R.mod.am','R.mod.em')
 

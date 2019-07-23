@@ -71,16 +71,16 @@ d <- merge(d, R.dat[,c('PLT_CN','BASAL.plot','stem.density')], all.x = T)
 #Environmental models without feedbacks.-----
 G.mod    <- mgcv::gam(DIA.cm    ~ mat + map + ndep*em            + s(PREVDIA.cm) + s(BASAL.plot) + s(stem.density), data = d[DIA.cm > 0,])
 M.mod    <- mgcv::gam(mortality ~ mat + map + ndep*em            + s(PREVDIA.cm) + s(BASAL.plot) + s(stem.density) + em, data = d, family = 'binomial')
-R.mod.em <- mgcv::gam(recruit.em ~ mat + map + (ndep)            + s(BASAL.plot) + s(stem.density), data = R.dat, family = 'ziP')
-R.mod.am <- mgcv::gam(recruit.am ~ mat + map + (ndep)            + s(BASAL.plot) + s(stem.density), data = R.dat, family = 'ziP')
+R.mod.em <- mgcv::gam(recruit.em ~ mat + map + (ndep)            + s(BASAL.plot) + s(stem.density), data = R.dat, family = 'poisson')
+R.mod.am <- mgcv::gam(recruit.am ~ mat + map + (ndep)            + s(BASAL.plot) + s(stem.density), data = R.dat, family = 'poisson')
 n.feedback <- list(G.mod, M.mod, R.mod.am, R.mod.em)
 names(n.feedback) <- c('G.mod','M.mod','R.mod.am','R.mod.em')
 
 #Environmental models with feedbacks.----
 G.mod    <- mgcv::gam(DIA.cm    ~ mat + map + ndep*em + relEM*em + s(PREVDIA.cm) + s(BASAL.plot) + s(stem.density), data = d[DIA.cm > 0,])
 M.mod    <- mgcv::gam(mortality ~ mat + map + ndep*em + relEM*em + s(PREVDIA.cm) + s(BASAL.plot) + s(stem.density) + em, data = d, family = 'binomial')
-R.mod.em <- mgcv::gam(recruit.em ~ mat + map + (ndep) +  (relEM) + s(BASAL.plot) + s(stem.density), data = R.dat, family = 'ziP')
-R.mod.am <- mgcv::gam(recruit.am ~ mat + map + (ndep) +  (relEM) + s(BASAL.plot) + s(stem.density), data = R.dat, family = 'ziP')
+R.mod.em <- mgcv::gam(recruit.em ~ mat + map + (ndep) +  (relEM) + s(BASAL.plot) + s(stem.density), data = R.dat, family = 'poisson')
+R.mod.am <- mgcv::gam(recruit.am ~ mat + map + (ndep) +  (relEM) + s(BASAL.plot) + s(stem.density), data = R.dat, family = 'poisson')
 y.feedback <- list(G.mod, M.mod, R.mod.am, R.mod.em)
 names(y.feedback) <- c('G.mod','M.mod','R.mod.am','R.mod.em')
 
