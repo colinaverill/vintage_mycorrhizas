@@ -13,7 +13,7 @@ n.am.1 <- list()
 for(i in 1:length(d$ramp.up$nul)){
   relEM.out.n[[i]] <- mean(d$ramp.up$nul    [[i]]$plot.table$relEM)
   relEM.out.y[[i]] <- mean(d$ramp.up$alt.GRM[[i]]$plot.table$relEM)
-  em.1 <- d$ramp.up$nul    [[i]]$plot.table$relEM
+  em.1 <- d$ramp.up$alt.GRM[[i]]$plot.table$relEM
   am.1 <- d$ramp.up$alt.GRM[[i]]$plot.table$relEM
   n.em.1[[i]] <- length(em.1[em.1 > 0.9])
   n.am.1[[i]] <- length(am.1[am.1 < 0.1])
@@ -31,7 +31,7 @@ n.am.2 <- list()
 for(i in 1:length(d$ramp.down$nul)){
   h.EM.n[[i]] <- mean(d$ramp.down$nul    [[i]]$plot.table$relEM)
   h.EM.y[[i]] <- mean(d$ramp.down$alt.GRM[[i]]$plot.table$relEM)
-  em.2 <- d$ramp.down$nul    [[i]]$plot.table$relEM
+  em.2 <- d$ramp.down$alt.GRM[[i]]$plot.table$relEM
   am.2 <- d$ramp.down$alt.GRM[[i]]$plot.table$relEM
   n.em.2[[i]] <- length(em.2[em.2 > 0.9])
   n.am.2[[i]] <- length(am.2[am.2 < 0.1])
