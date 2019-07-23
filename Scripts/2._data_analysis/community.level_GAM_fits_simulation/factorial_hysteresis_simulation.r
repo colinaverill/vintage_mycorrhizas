@@ -22,7 +22,7 @@ makeitwork <- function(x, n = 4){
 output.path <- factorial_hysteresis_simulation.path
 
 #load models and environmental covariates.----
-fits <- readRDS(myco_gam_fits2.path) #trying with new density dependence for recruitment.
+fits <- readRDS(myco_gam_fits.path) #trying with new density dependence for recruitment.
 env.cov <- fits$env.cov
 
 #register parallel environment.----
