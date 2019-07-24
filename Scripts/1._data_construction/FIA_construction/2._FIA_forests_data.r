@@ -30,7 +30,7 @@ file.out.future = FIA_extraction_out_FUTURE.path
 
 #state codes
 states <- read.csv('required_products_utilities/FIA_state_codes_regions.csv')
-states <- states[states$paleon == 1,]$STATECD
+states <- states[states$paleon == 1 | states$east == 1 | states$midwest == 1,]$STATECD
 states <- paste(states, collapse = ', ')
 states <- paste0('(',states,')')
 
