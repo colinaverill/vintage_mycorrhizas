@@ -196,8 +196,8 @@ Product_1.soil$cn <- Product_1.soil$C.storage / Product_1.soil$N.storage
 Product_1.soil    <- Product_1.soil[cn < 90,]
 
 #save output.
-saveRDS(Product_1     , file=Product_1.path     )
-saveRDS(Product_1.soil, file=Product_1.soil.path)
+saveRDS(Product_1     , file=Product_1.path     , version = 2)
+saveRDS(Product_1.soil, file=Product_1.soil.path, version = 2)
 
 #time series relEM modeling
 time_series <- list(scaled.list[['a.FIA.2']], 
@@ -205,7 +205,7 @@ time_series <- list(scaled.list[['a.FIA.2']],
                     scaled.list[['past2']], 
                     scaled.list[['past3']])
 names(time_series) <- c('present','past1','past2','past3')
-saveRDS(time_series,time_series_dat.path)
+saveRDS(time_series,time_series_dat.path, version = 2)
 cat('Plot level Product 1 and time series plot level data sets constructed.\n')
 
 ##################################################################
@@ -290,88 +290,7 @@ Product_2      <- merge(Product_2     ,scaled.list[[4]][,.(relEM,relEM.AM,plot.B
 Product_2.soil <- merge(Product_2.soil,  Product_1.soil[,.(relEM,relEM.AM,plot.BASAL,PLT_CN)], by.x = 'PREV_PLT_CN', by.y = 'PLT_CN')
 
 #save the output! Tree-level mortality data paired with soils!
-saveRDS(Product_2     , Product_2.path     )
-saveRDS(Product_2.soil, Product_2.soil.path)
-cat('Finished constructing individual level Product 2.\')
-
-############################################################
-#####      Product 3. Plot-level Recruitment Data     ######
-############################################################
-##****NOTE: Not sure if this needs to be its own product anymore. 
-##Don't see why it can't just be tacked onto site level data in Product_1.
-
-#In this section I calculate:
-#A. Plot area from TPA_UNADJ column (expansion factors)
-#B. Calculate total recruitment and by mycorrhizal type. 
-#C. Aggregate individual tree data to the plot scale. Add site level data. 
-
-###########################################################
-#A. Plot area from TPA_UNADJ column (expansion factors)
-###########################################################
-#Note- all microplot observations of saplings have already been removed. 
-#assuming they sample everything within the plot at the biggest resolution, the correct TPA_UNADJ is the smallest non-zero, non-NA TPA_UNADJ number.
-recr.list <- list(data.list[[2]],data.list[[4]])
-names(recr.list) <- c(names(data.list)[2], names(data.list)[4])
-
-for(i in 1:length(recr.list)){
-  recr.list[[i]][, TPA.fixed := ifelse(TPA_UNADJ == 0, NA, TPA_UNADJ)]
-  recr.list[[i]][, TPA.fixed := ifelse(TPA_UNADJ == "", NA, TPA.fixed)]
-  recr.list[[i]][, TPA.fixed := min(TPA.fixed, na.rm=T), by = PLT_CN]
-}
-
-#17 sites do not have a TPA_UNADJ values that is not NA. 239/23697 sites in all trees subset.
-length(unique(recr.list[[2]]$PLT_CN))
-length(unique(recr.list[[2]][is.na(TPA.fixed)]$PLT_CN))
-for(i in 1:length(recr.list)){
-  recr.list[[i]] <- recr.list[[i]][!(is.na(TPA.fixed)),]
-  recr.list[[i]][,TPA.fixed := as.numeric(TPA.fixed)]
-}
-
-##calculate plot area as 1/TPA_UNADJ, which returns the area in acres. Convert to m2 by multiplying by 4046.86
-for(i in 1:length(recr.list)){
-  recr.list[[i]][,area.m2 := 1/TPA.fixed * 4046.86]
-} 
-
-
-###########################################################
-#######   B. calculate recruitment, by MYC   ##############
-###########################################################
-
-#get a recruitment vector. Anything that does not have a PREV_TRE_CN value.
-for (i in 1:length(recr.list)){
-  recr.list[[i]][,   recruit := ifelse(is.na(PREV_TRE_CN), 1, 0)]
-  recr.list[[i]][,recruit.em := ifelse(MYCO_ASSO == 'ECM',recruit, 0)]
-  recr.list[[i]][,recruit.am := ifelse(MYCO_ASSO ==  'AM',recruit, 0)]
-}
-
-########################################################################
-##### C. Get recruitment at the plot-scale, pair with other data. ######
-########################################################################
-r.scaled.list <- list()
-for(i in 1:length(recr.list)){
-  r.scaled.list[[i]] <- aggregate(recr.list[[i]]$recruit ~ recr.list[[i]]$PLT_CN, FUN = 'sum', na.rm = T, na.action = na.pass)
-  colnames(r.scaled.list[[i]]) <- c('PLT_CN','recruit')
-}
-names(r.scaled.list) <- names(recr.list)
-
-#pop in AM and EM recruit numbers, plot areas.
-for(i in 1:length(r.scaled.list)){
-  r.scaled.list[[i]]$recruit.am <- aggregate(recr.list[[i]]$recruit.am ~ recr.list[[i]]$PLT_CN, FUN = 'sum'   , na.rm=T, na.action = na.pass)[,2]
-  r.scaled.list[[i]]$recruit.em <- aggregate(recr.list[[i]]$recruit.em ~ recr.list[[i]]$PLT_CN, FUN = 'sum'   , na.rm=T, na.action = na.pass)[,2]
-  r.scaled.list[[i]]$area.m2    <- aggregate(recr.list[[i]]$area.m2    ~ recr.list[[i]]$PLT_CN, FUN = 'median', na.rm=T, na.action = na.pass)[,2]
-}
-
-#break out all and soil product for merging in final plot-scale stuff from Product_1
-Product_3      <- r.scaled.list[[2]]
-Product_3.soil <- r.scaled.list[[1]]
-
-#merge in plot scale data and soils.
-Product_3      <- merge(Product_3     ,scaled.list[[4]][,.(latitude,longitude,elevation,STDAGE,relEM,relEM.AM,plot.BASAL,n.trees,REMPER,INVYR,STATECD,PREV_PLT_CN,PLT_CN)], by = 'PLT_CN') 
-Product_3.soil <- merge(Product_3.soil,scaled.list[[2]][,.(latitude,longitude,elevation,STDAGE,relEM,relEM.AM,plot.BASAL,n.trees,REMPER,INVYR,STATECD,PREV_PLT_CN,PLT_CN)], by = 'PLT_CN')
-Product_3.soil <- merge(Product_3.soil,Soils, by.x = 'PREV_PLT_CN', by.y = "PLT_CN")
-
-#save this output file. Gross basal increment of surviving trees at the plot scale, paired with soils!
-saveRDS(Product_3     , Product_3.path     )
-saveRDS(Product_3.soil, Product_3.soil.path)
-
-##end script.
+saveRDS(Product_2     , Product_2.path     , version = 2)
+saveRDS(Product_2.soil, Product_2.soil.path, version = 2)
+cat('Finished constructing individual level Product 2. Script complete.\n')
+toc()

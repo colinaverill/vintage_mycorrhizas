@@ -30,7 +30,7 @@
 #
 #
 # load necessary modules 
-module load R/3.4.0
+module load R
 #
 # This assumes the working directory is the R project:
 Rscript Scripts/1._data_construction/FIA_construction/3._aggregate_FIA_data.r
