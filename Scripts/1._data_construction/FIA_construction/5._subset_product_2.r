@@ -18,7 +18,8 @@ d <- unique(d)
 
 #Subset.----
 set.seed(42069)
-d <- d[sample(nrow(d), 1500),]
+n.plots <- 4000 #set number of plots to subsample.
+d <- d[sample(nrow(d), n.plots),]
 p2 <- p2[PLT_CN %in% d$PLT_CN,]
 
 #plot subset to make sure its representative.----
