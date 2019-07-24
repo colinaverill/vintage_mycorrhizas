@@ -34,9 +34,9 @@ p3.soil <- p3.soil[,c(to.drop) := NULL]
 p1 <- cbind(p1,extract_ndep(p1$longitude, p1$latitude))
 p2 <- merge(p2,p1[,.(PLT_CN,n.dep,dry.dep,wet.dep)])
 p3 <- merge(p3,p1[,.(PLT_CN,n.dep,dry.dep,wet.dep)])
-p1.soil <- cbind(p1.soil, extract_ndep(p1.soil$longitude, p1.soil$latitude))
-p2.soil <- cbind(p2.soil, extract_ndep(p2.soil$LON      , p2.soil$LAT     ))
-p3.soil <- cbind(p3.soil, extract_ndep(p3.soil$longitude, p3.soil$latitude))
+p1.soil <- merge(p1.soil, p1[,.(PLT_CN,n.dep,dry.dep,wet.dep)])
+p2.soil <- merge(p2.soil, p1[,.(PLT_CN,n.dep,dry.dep,wet.dep)])
+p3.soil <- merge(p3.soil, p1[,.(PLT_CN,n.dep,dry.dep,wet.dep)])
 
 #pull worldclim2 climate data and aridity
 p1 <- cbind(p1,worldclim2_grab(p1$latitude,p1$longitude))
@@ -46,9 +46,9 @@ p3 <- merge(p3, p1[,.(PLT_CN,mat,map,mat_CV,map_CV,mdr,aridity)])
 p1.soil <- cbind(p1.soil, worldclim2_grab(p1.soil$latitude, p1.soil$longitude))
 p2.soil <- cbind(p2.soil, worldclim2_grab(p2.soil$LAT     , p2.soil$LON      ))
 p3.soil <- cbind(p3.soil, worldclim2_grab(p3.soil$latitude, p3.soil$longitude))
-p1.soil$aridity <- arid_extract(p1.soil$latitude, p1.soil$longitude)
-p2.soil$aridity <- arid_extract(p2.soil$LAT     , p2.soil$LON      )
-p3.soil$aridity <- arid_extract(p3.soil$latitude, p3.soil$longitude)
+#p1.soil$aridity <- arid_extract(p1.soil$latitude, p1.soil$longitude)
+#p2.soil$aridity <- arid_extract(p2.soil$LAT     , p2.soil$LON      )
+#p3.soil$aridity <- arid_extract(p3.soil$latitude, p3.soil$longitude)
 
 #save output.
 saveRDS(p1, Product_1.path)
