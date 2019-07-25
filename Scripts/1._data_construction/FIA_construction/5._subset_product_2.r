@@ -12,9 +12,11 @@ output.path <- Product_2.subset.path
 p2 <- readRDS(Product_2.path)
 
 #Grab a plot table with PLT_CN, lat-lon and STATECD.----
-d <- p2[,.(PLT_CN,LAT,LON,STATECD,relEM)]
+d <- p2[,.(PLT_CN,LAT,LON,STATECD,relEM,REMPER)]
 setkey(d, 'PLT_CN')
 d <- unique(d)
+d <- d[d$REMPER >=4.9 & d$REMPER <= 5.1,]
+
 
 #Subset.----
 set.seed(42069)
