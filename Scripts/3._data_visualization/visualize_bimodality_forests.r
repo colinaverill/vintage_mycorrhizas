@@ -4,7 +4,7 @@ source('paths.r')
 source('project_functions/crib_fun.r')
 library(data.table)
 library(betareg)
-library(betareg)
+library(boot)
 
 
 #load data.----
@@ -40,7 +40,7 @@ par(mfrow=c(1,1),
 #Plot results.----
 cols <- c('#00acd9','#cfe83c') #pick colors
 par(mfrow = c(1,1))
-hist(d$corrected, breaks = 10, xlim = c(0,1), 
+hist(d$corrected, breaks = 20, xlim = c(0,1), 
      ylab = NA, xlab = NA, main = NA, 
      yaxt = 'n', col = cols[1])
 #label.

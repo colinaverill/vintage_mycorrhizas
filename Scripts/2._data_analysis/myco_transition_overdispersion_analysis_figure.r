@@ -74,7 +74,7 @@ for(i in 1:3){
 par(mfrow = c(2,1))
 hist(sim$t3, xlim = c(0,1))
 hist(dat$p0.relEM, xlim = c(0,1))
-var.test(dat$p0.relEM, sim$t3) #Yes, true data are significantly overdispersed, variance 3.8x greater.
+var.test(dat$p0.relEM, sim$t3) #Yes, true data are significantly overdispersed, variance 40% greater.
 
 #data prep for viz.----
 #Fix the inventory years to standardize.
@@ -89,15 +89,7 @@ b.comp <- sim
 b.time <- c(1999:2016)
 b.time <- c(1999, 2004, 2009, 2014)
 
-#Visualize.----
-#Lines overlaid.
-#par(mfrow  = c(1,1))
-#plot(dat$p3.relEM ~ dat$p3.INVYR, cex = 0, ylim = c(0,1), xlim = c(1999, 2016), bty = 'l')
-#for(i in 1:nrow(a)){
-#  lines(as.numeric(b.comp[i,]) ~ b.time, col = adjustcolor('gray', 0.5))
-#  lines(as.numeric(a.comp[i,]) ~ as.numeric(a.time[i,]), col = adjustcolor('purple', 0.5))
-#}
-
+#Visualize.---- d
 #save line.----
 png('overdispersion_figure.png', width = 7, height = 5, units = 'in', res = 300)
 
@@ -124,7 +116,7 @@ mtext('Year', side = 1, outer = T, cex = 1.4, line = 1.3)
 dev.off()
 
 
-#visualize distirbution of deltas with overlaid density plots.
+#visualize distirbution of deltas with overlaid density plots.----
 delta_plot = F
 if(delta_plot ==T){
   #save line.

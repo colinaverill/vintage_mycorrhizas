@@ -10,6 +10,7 @@ output.path <- Product_2.subset.path
 
 #load data.----
 p2 <- readRDS(Product_2.path)
+states <- read.csv('required_products_utilities/FIA_state_codes_regions.csv')
 
 #Grab a plot table with PLT_CN, lat-lon and STATECD.----
 d <- p2[,.(PLT_CN,LAT,LON,STATECD,relEM,REMPER)]

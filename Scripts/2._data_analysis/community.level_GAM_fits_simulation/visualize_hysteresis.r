@@ -45,14 +45,15 @@ n.am.2 <- unlist(n.am.2)
 #plot overall relative abundance.----
 #with feedbacks.
 par(mfrow = c(1,2))
-plot(relEM.out.y ~ c(1:15), ylim=c(0.5,0.9), pch = 16, col = 'green', cex = 2, main = 'with feedbacks', bty = 'l')
+limy <- c(0.3, 1)
+plot(relEM.out.y ~ c(1:15), ylim=limy, pch = 16, col = 'green', cex = 2, main = 'with feedbacks', bty = 'l')
 lines(smooth.spline(relEM.out.y ~ c(1:15)), lwd = 2, col = 'green')
 #drop return points.
 points(h.EM.y ~ c(15:1), pch = 16, col = 'purple', cex = 2)
 lines(smooth.spline(h.EM.y ~ c(15:1)), lwd = 2, col = 'purple')
 
 #without feedbacks.
-plot(relEM.out.n ~ c(1:15), ylim=c(0.5,0.9), pch = 16, col = 'green', cex = 2, main = 'without feedbacks', bty = 'l')
+plot(relEM.out.n ~ c(1:15), ylim=limy, pch = 16, col = 'green', cex = 2, main = 'without feedbacks', bty = 'l')
 lines(smooth.spline(relEM.out.n ~ c(1:15)), lwd = 2, col = 'green')
 #drop return points.
 points(h.EM.n ~ c(15:1), pch = 16, col = 'purple', cex = 2)

@@ -47,10 +47,10 @@ mean.pred <- predict(mod, newdata = data.frame(t(mean.pred)))
 corrected <- obs - boot::logit(pred) + boot::logit(mean.pred)[1]
 d$corrected <- corrected
 
-par(mfrow = c(2,2))
+par(mfrow = c(1,2))
 par(oma = c(.1,.1,.1,.1))
-hist(d$relEM)
-hist(boot::inv.logit(corrected), xlab = 'Fraction forest ECM')
+hist(d$relEM, ylim = c(0, 1200))
+hist(boot::inv.logit(corrected), xlab = 'Fraction forest ECM', ylim = c(0, 1200))
 
 #test for biomodality
 #everything bimodal except for corrected values on the logit scale.
