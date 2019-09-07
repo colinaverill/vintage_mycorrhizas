@@ -23,7 +23,8 @@ output.path <- factorial_hysteresis_simulation.path
 
 #load models and environmental covariates.----
 fits <- readRDS(myco_gam_fits2.path) #trying with new density dependence for recruitment.
-env.cov <- fits$env.cov
+env.cov <- data.frame(t(fits$env.cov))
+env.cov <- fits$all.cov
 
 #register parallel environment.----
 n.cores <- detectCores()
@@ -45,7 +46,7 @@ ramp.alt.R   <- list()
 ramp.alt.M   <- list()
 tic() #start timer.
 for(i in 1:length(ndep.ramp.range)){
-  env.cov['ndep'] <- ndep.ramp.range[i]
+  env.cov$ndep <- ndep.ramp.range[i]
   #Null model.
     ramp.nul[[i]] <- makeitwork(
                       forest.sim(g.mod    = fits$n.feedback$G.mod, 
@@ -103,8 +104,9 @@ for(i in 1:length(ndep.ramp.range)){
 
 #Run Ndep reduction simulations. Altenrative models are dropping one feedback level at a time.----
 #reset env.cov levels.
-env.cov <- fits$env.cov
-env.cov['ndep'] <- 15  #start from highest level to assess return.
+env.cov <- data.frame(t(fits$env.cov))
+env.cov <- fits$all.cov
+env.cov$ndep <- 15  #start from highest level to assess return.
 down.nul <- list()
 down.alt.GRM <- list()
 down.alt.GR  <- list()

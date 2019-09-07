@@ -13,11 +13,13 @@ output.path <- nul.alt_feedback_GAM_ndep_simulation.path
 
 #load models.----
 fits <- readRDS(myco_gam_fits.path)
+fits <- readRDS(myco_gam_fits2.path)
 g.mod <- fits$y.feedback$G.mod
 m.mod <- fits$y.feedback$M.mod
 r.mod.am <- fits$y.feedback$R.mod.am
 r.mod.em <- fits$y.feedback$R.mod.em
-env.cov <- fits$env.cov
+#env.cov <- fits$env.cov
+env.cov <- fits$all.cov
 
 #register parallel environment.----
 n.cores <- detectCores()
@@ -30,7 +32,7 @@ out.nul <- list()
 out.alt <- list()
 tic()
 for(i in 1:length(ndep.range)){
-  env.cov['ndep'] <- ndep.range[i]
+  env.cov$ndep <- ndep.range[i]
   out.nul[[i]] <- forest.sim(g.mod    = fits$n.feedback$G.mod, 
                              m.mod    = fits$n.feedback$M.mod,
                              r.mod.am = fits$n.feedback$R.mod.am, 
@@ -57,4 +59,3 @@ names(out.alt) <- ndep.range
 output <- list(out.nul, out.alt)
 names(output) <- c('n.feedback','y.feedback')
 saveRDS(output, output.path, version = 2)
-

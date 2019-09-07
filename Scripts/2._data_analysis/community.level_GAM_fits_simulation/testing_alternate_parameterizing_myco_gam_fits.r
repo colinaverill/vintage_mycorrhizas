@@ -94,8 +94,10 @@ names(y.feedback) <- c('G.mod','M.mod','R.mod.am','R.mod.em')
 #Get plot environmental covariates for reference.
 cov <- c(mean(R.dat$mat), mean(R.dat$map), mean(R.dat$ndep))
 names(cov) <- c('mat','map','ndep')
+#grab plot-level environment for all plots. we will sample this later when simulating forests.
+all.cov <- R.dat[,c('mat','map','ndep')]
 
 #Save models and size categories.----
-output <- list(n.feedback, y.feedback, cov)
-names(output) <- c('n.feedback', 'y.feedback','env.cov')
+output <- list(n.feedback, y.feedback, cov, all.cov)
+names(output) <- c('n.feedback', 'y.feedback','env.cov','all.cov')
 saveRDS(output, output.path)

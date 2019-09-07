@@ -23,6 +23,9 @@ forest.sim <- function(g.mod, r.mod.am, r.mod.em, m.mod,
   if(n.plots         %% 2 != 0){
     stop('n.plots needs to be an even, integer value.\n')
   }
+  if(is.data.frame(env.cov) == F){
+    stop('env.cov must be a data frame, even if its a data frame with only one row.\n')
+  }
   
   #Register parallel environment.----
   if(is.na(n.cores)){
@@ -65,15 +68,20 @@ forest.sim <- function(g.mod, r.mod.am, r.mod.em, m.mod,
     STDAGE <- 0
     return <- c(plot.basal, plot.basal.em, density, am.density, em.density, relEM, STDAGE)
     names(return) <- c('BASAL.plot','BASAL.em','stem.density','am.density','em.density','relEM','STDAGE')
-    #add the static environmental covariates in (if you have any).
+    #add the environmental covariates in (if you have any).
     if(sum(!is.na(env.cov)) > 0){
-      return <- c(return, env.cov)
+      #sample a row of the environmental covariate matrix.
+      this.cov <- env.cov[sample(nrow(env.cov), 1),]
+      return <- c(return, this.cov)
+      return <- unlist(return)
     }
     plot.table[[i]] <- return
   }
   plot.table <- data.frame(do.call(rbind, plot.table))
   #track plot table through time in a list.
   super.table <- list(plot.table)
+  #save a record of each plots environmental covariates.
+  env.table <- plot.table[,colnames(plot.table) %in% colnames(env.cov)]
   
   #Begin simulation!----
   for(t in 1:n.step){
@@ -133,7 +141,9 @@ forest.sim <- function(g.mod, r.mod.am, r.mod.em, m.mod,
       names(return) <- c('BASAL.plot','BASAL.em','stem.density','am.density','em.density','relEM','STDAGE')
       #add the static environmental covariates in (if you have any).
       if(sum(!is.na(env.cov)) > 0){
-        return <- c(return, env.cov)
+        this.env <- env.table[i,]
+        return <- c(return, this.env)
+        return <- unlist(return)
       }
       plot.table[[i]] <- return
     }
@@ -150,9 +160,9 @@ forest.sim <- function(g.mod, r.mod.am, r.mod.em, m.mod,
     #4. Switch N loading if the time is right.----
     if(!is.na(step.switch)){
       if(t == step.switch){
-        old <- round(env.cov['ndep'],1)
+        old <- round(env.table$ndep[1],1)
         new <- round(switch.lev, 1)
-        env.cov['ndep'] <- switch.lev
+        env.table$ndep <- switch.lev
         msg <- paste0('N deposition switched from ',old,' to ',new,' kg N ha-1 yr-1.\n')
         if(silent == F){
           cat(msg)
@@ -161,7 +171,7 @@ forest.sim <- function(g.mod, r.mod.am, r.mod.em, m.mod,
     }
   }
   #return simulation output.----
-  output <- list(plot.table, super.table)
-  names(output) <- c('plot.table','super.table')
+  output <- list(plot.table, super.table, env.table)
+  names(output) <- c('plot.table','super.table','env.table')
   return(output)
 }
