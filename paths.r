@@ -26,6 +26,7 @@ myco_gam_fits2.path <- paste0(storage.dir,'myco_gam_fits2.rds')
 nul.alt_feedback_GAM_ndep_simulation.path <- paste0(storage.dir,'nul.alt_feedback_GAM_ndep_simulation.rds')
 nul.alt_hysteresis_GAM_ndep_simulation.path <- paste0(storage.dir,'nul.alt_hysteresis_GAM_ndep_simulation.rds')
 factorial_hysteresis_simulation.path <- paste0(storage.dir,'factorial_hysteresis_simulation.rds')
+forest_sim_within.plot.myc120.path <- paste0(storage.dir,'forest_sim_within.plot.myc120.rds')
 
 #JAGS model output paths.
 historic_contemporary_EM_spatial.path <- paste0(storage.dir,'historic_contemporary_EM_spatial.path')

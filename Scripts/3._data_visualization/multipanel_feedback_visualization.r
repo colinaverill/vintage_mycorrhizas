@@ -1,6 +1,7 @@
 #5-panel to show recruitment and mortality positive feedbacks, demo simulation altnerative stable states, and hysteresis.
 rm(list=ls())
 source('paths.r')
+library(mgcv)
 
 #set output line.----
 png('test.png',width = 10, height = 6, units = 'in', res = 300)
