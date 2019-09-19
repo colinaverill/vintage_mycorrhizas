@@ -86,9 +86,10 @@ forest.sim <- function(g.mod, r.mod.am, r.mod.em, m.mod,
   #Begin simulation!----
   for(t in 1:n.step){
     #1. Grow and kill your trees. Then recruit new trees.----
-    new.plot.list <- list()
+    #new.plot.list <- list()
     new.plot.list <- 
       foreach(j = 1:length(plot.list)) %dopar% {
+      #for(j in 1:length(plot.list)){
         #grab tree table for a given plot.
         cov <- plot.list[[j]]
         colnames(cov)[1] <- c('PREVDIA.cm')
@@ -107,6 +108,11 @@ forest.sim <- function(g.mod, r.mod.am, r.mod.em, m.mod,
         recruits.prob.em <- exp(predict(r.mod.em, newdata = plot.table[j,]))
         recruits.am      <- rpois(length(recruits.prob.am), recruits.prob.am)
         recruits.em      <- rpois(length(recruits.prob.em), recruits.prob.em)
+        #Hard limit on stem density.
+        if(nrow(tree.new) > 120){
+          recruits.am <- 0
+          recruits.em <- 0
+        }
         #AM recruits.
         new.recruit.am <- matrix(data = 12.7,nrow = recruits.am, ncol = 1)
         em             <- matrix(data =    0,nrow = recruits.am, ncol = 1)
@@ -123,6 +129,7 @@ forest.sim <- function(g.mod, r.mod.am, r.mod.em, m.mod,
         #update your tree table.
         to_return <- rbind(tree.new, new.recruit.em, new.recruit.am)
         return(to_return)
+        #new.plot.list[[j]] <- to_return
       } #end parallel plot loop.
     plot.list <- new.plot.list
     
