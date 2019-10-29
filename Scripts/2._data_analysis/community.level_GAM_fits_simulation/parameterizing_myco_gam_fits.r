@@ -40,6 +40,8 @@ stem.density         <- aggregate(    DIA ~ PLT_CN, data = d[d$recruit == 0,], F
 ndep                 <- aggregate(ndep  ~ PLT_CN, data = d, FUN = median)
 mat                  <- aggregate( mat  ~ PLT_CN, data = d, FUN = median)
 map                  <- aggregate( map  ~ PLT_CN, data = d, FUN = median)
+lat                  <- aggregate( LAT  ~ PLT_CN, data = d, FUN = median)
+lon                  <- aggregate( LON  ~ PLT_CN, data = d, FUN = median)
 BASAL.em             <- aggregate(BASAL ~ PLT_CN, data = d[d$recruit == 0 & d$em == 1,], FUN = sum)
 STDAGE               <- aggregate(STDAGE ~ PLT_CN, data = d, FUN = median)
 diversity            <- aggregate(spp.count ~ PLT_CN, data = d, FUN = median)
@@ -57,6 +59,8 @@ R.dat <- merge(R.dat, ndep)
 R.dat <- merge(R.dat, STDAGE)
 R.dat <- merge(R.dat, BASAL.em)
 R.dat$relEM <- R.dat$BASAL.em / R.dat$BASAL.plot
+R.dat <- merge(R.dat, lat)
+R.dat <- merge(R.dat, lon)
 
 #Merge plot basal area and stemp density into individual level tree object.
 d <- merge(d, R.dat[,c('PLT_CN','BASAL.plot','stem.density')], all.x = T)

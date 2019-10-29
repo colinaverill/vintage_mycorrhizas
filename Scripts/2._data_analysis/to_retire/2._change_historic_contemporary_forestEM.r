@@ -3,6 +3,7 @@ rm(list=ls())
 library(data.table)
 library(boot)
 library(betareg)
+library(mgcv)
 library(wesanderson)
 source('paths.r')
 source('project_functions/crib_fun.r')
@@ -15,7 +16,7 @@ d$mat.delta <- d$mat30 - d$tair.yr.set
 d$map.delta <- d$map30 - d$precip.yr.set
 
 #get complete cases.
-d <- d[,.(delta.EM, h.relEM, c.relEM, mat30, map30, n.dep, mat.delta, map.delta)]
+d <- d[,.(delta.EM, h.relEM, c.relEM, mat30, map30, n.dep, mat.delta, map.delta, latitude, longitude)]
 d <- d[complete.cases(d),]
 
 m <- lm(delta.EM ~  n.dep + mat.delta + map.delta + mat30 + map30, data = d)
@@ -23,19 +24,51 @@ plot(residuals(m) ~ fitted(m), cex = 0.2)
 plot(d$delta.EM ~ fitted(m), cex = 0.2)
 
 
+#Betareg models.----
 #in betareg- interaction works out to where 1-15 Ndep results in 70% -> 45% EM.
 #add climate change.
 mod <- betareg(c.relEM ~ logit(h.relEM) * n.dep + 
-                         logit(h.relEM)*mat30 + 
                          logit(h.relEM)*mat.delta + 
-                         logit(h.relEM)*map30 +
+                         map.delta +
                          n.dep*mat30 +
-                 mat30*map30 + mat.delta + map.delta, data = d)
+                 map30, data = d)
 null.mod <- betareg(c.relEM ~ logit(h.relEM), data = d)
  env.mod <- betareg(c.relEM ~ n.dep + mat30 + map30 + mat.delta + map.delta, data = d)
 #THE FORESTS ARE LESS EM RELATIVE TO HISTORIC OVERALL, AND MORE SO WITH HIGH N-DEP. Depends on initial forest state. More ecto places seem more resistant to N-dep.
 
-#generate figures
+#Linear models of logit transformed data.----
+d$logit.h.relEM <- logit(d$h.relEM)
+d$y <- logit(d$c.relEM)
+d$x <- logit(d$h.relEM)
+mod <- lm(y ~ x * n.dep + x*mat.delta + mat30 + map30, data = d)
+summary(mod)
+plot(residuals(mod) ~ fitted(mod))
+plot(d$y ~ fitted(mod))
+plot(delta.EM ~ logit.h.relEM, data = d)
+
+#gam models.----
+ #Account for spatial autcorrelation. total R2 > 90%. predicted vs. observed looks almost too good. Turn it to a RE to throw this out.
+ #gams fuck up climate effects, more EM at higher temps, which is wrong. 
+ #Climate effect saved when you consider 3-way interactions.
+ #Needs a lot of visualization work.
+m1 <- gam(logit(c.relEM) ~ logit(h.relEM) * n.dep * mat30 + mat30 + (map30) + logit(h.relEM)*mat.delta + (map.delta) + s(latitude, longitude, bs = 're'), data = d)
+summary(m1) 
+plot(logit(d$c.relEM) ~ fitted(m1), bty = 'l', cex = 0.3)
+abline(0,1, lwd =2, col = 'purple', lty = 3)
+rsq <- round(summary(lm(logit(d$c.relEM) ~ fitted(m1)))$r.squared, 2)
+mtext(paste0('R2 = ',rsq), side = 3, adj = 0.05, line = -2)
+
+#GLS models: Predictions are weird and literatlly nothing is significant. Prob mis-specified.----
+m1 <- gls(logit(c.relEM) ~ logit(h.relEM) * n.dep + logit(h.relEM) *(mat30) + (map30) + logit(h.relEM)*(mat.delta) + (map.delta),
+          correlation = corRatio(form = ~longitude + latitude, nugget = TRUE),
+          data = d)
+summary(m1) 
+plot((d$c.relEM) ~ fitted(m1), bty = 'l', cex = 0.3)
+abline(0,1, lwd =2, col = 'purple', lty = 3)
+vario3 <- Variogram(m1, form = ~longitude + latitude, resType = "pearson")
+plot(vario3, smooth = FALSE)
+
+#generate figures.
  
 #1. Betareg env, bio, env+bio fits.----
 #compare model fit to only historic relative abundace vs. model fit to historic relative abundance and environmental factors.
