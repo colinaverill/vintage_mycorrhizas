@@ -13,7 +13,7 @@
 #$ -l buyin
 #
 #Give the job a name
-#$ -N fac_hysteresis
+#$ -N disturb_fac_hysteresis
 #
 # Merge stderr into the stdout file, to reduce clutter
 #$ -j y

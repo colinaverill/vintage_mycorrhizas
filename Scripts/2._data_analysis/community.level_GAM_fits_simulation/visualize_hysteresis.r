@@ -61,17 +61,18 @@ lines(smooth.spline(h.EM.n ~ c(15:1)), lwd = 2, col = 'purple')
 
 
 #try plotting counts.-----
+#counts w/ feedback.
 par(mfrow = c(1,2))
-plot(n.em.1 ~ c(1:15), ylim=c(0,max(c(n.em.1,n.em.2))), pch = 16, col = 'green', cex = 2, main = 'with feedbacks', bty = 'l')
+plot(n.em.1 ~ c(1:15), ylim=c(0,max(c(n.em.1,n.em.2))), pch = 16, col = 'green', cex = 2, main = 'feedback EM dominated plots', bty = 'l')
 lines(smooth.spline(n.em.1 ~ c(1:15)), lwd = 2, col = 'green')
 #drop return points.
 points(n.em.2 ~ c(15:1), pch = 16, col = 'purple', cex = 2)
 lines(smooth.spline(n.em.2 ~ c(15:1)), lwd = 2, col = 'purple')
 
-#without feedbacks.
-plot(relEM.out.n ~ c(1:15), ylim=c(0.5,0.8), pch = 16, col = 'green', cex = 2, main = 'without feedbacks', bty = 'l')
-lines(smooth.spline(relEM.out.n ~ c(1:15)), lwd = 2, col = 'green')
+#relative abundance with feedback.
+plot(relEM.out.y ~ c(1:15), ylim=c(0.5,0.8), pch = 16, col = 'green', cex = 2, main = 'feedback relEM', bty = 'l')
+lines(smooth.spline(relEM.out.y ~ c(1:15)), lwd = 2, col = 'green')
 #drop return points.
-points(h.EM.n ~ c(15:1), pch = 16, col = 'purple', cex = 2)
-lines(smooth.spline(h.EM.n ~ c(15:1)), lwd = 2, col = 'purple')
+points(h.EM.y ~ c(15:1), pch = 16, col = 'purple', cex = 2)
+lines(smooth.spline(h.EM.y ~ c(15:1)), lwd = 2, col = 'purple')
 

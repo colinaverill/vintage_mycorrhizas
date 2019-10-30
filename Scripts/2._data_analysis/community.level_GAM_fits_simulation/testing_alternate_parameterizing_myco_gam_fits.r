@@ -76,16 +76,22 @@ d <- merge(d, R.dat[,c('PLT_CN','BASAL.plot','stem.density','am.density','em.den
 
 #Fit growth, recruitment and mortality models.----
 #Environmental models without feedbacks.
-G.mod    <- gam(DIA.cm     ~ em + s(ndep, by=as.factor(em)) + s(mat, k = 3) + s(map, k = 3) + s(PREVDIA.cm       ) + s(BASAL.plot) + s(stem.density), data = d[DIA.cm > 0,])
-M.mod    <- gam(mortality  ~ em + s(ndep, by=as.factor(em), k = 3) + s(mat, k = 3) + s(map, k = 3) + s(PREVDIA.cm, k = 5) + s(BASAL.plot) + s(stem.density), data = d, family = 'binomial')
+#G.mod    <- gam(DIA.cm     ~ em + s(ndep, by=as.factor(em)) + s(mat, k = 3) + s(map, k = 3) + s(PREVDIA.cm       ) + s(BASAL.plot) + s(stem.density), data = d[DIA.cm > 0,])
+#M.mod    <- gam(mortality  ~ em + s(ndep, by=as.factor(em), k = 3) + s(mat, k = 3) + s(map, k = 3) + s(PREVDIA.cm, k = 5) + s(BASAL.plot) + s(stem.density), data = d, family = 'binomial')
+#Dropping spline in G-mod and M-mod, seeing if this improves simulation outcomes.
+G.mod    <- gam(DIA.cm     ~ em + em*ndep + s(mat, k = 3) + s(map, k = 3) + s(PREVDIA.cm       ) + s(BASAL.plot) + s(stem.density), data = d[DIA.cm > 0,])
+M.mod    <- gam(mortality  ~ em + em*ndep + s(mat, k = 3) + s(map, k = 3) + s(PREVDIA.cm, k = 5) + s(BASAL.plot) + s(stem.density), data = d, family = 'binomial')
 R.mod.am <- gam(recruit.am ~ am.density       + ndep + s(mat, k = 3) + s(map, k = 3)                        + s(BASAL.plot) + s(stem.density), data = R.dat, family = 'poisson')
 R.mod.em <- gam(recruit.em ~ em.density       + ndep + s(mat, k = 3) + s(map, k = 3)                        + s(BASAL.plot) + s(stem.density), data = R.dat, family = 'poisson')
 n.feedback <- list(G.mod, M.mod, R.mod.am, R.mod.em)
 names(n.feedback) <- c('G.mod','M.mod','R.mod.am','R.mod.em')
 
 #Environmental models with feedbacks.
-G.mod    <- gam(DIA.cm     ~ em*relEM + s(ndep, by=as.factor(em)) + s(mat, k = 3) + s(map, k = 3) + s(PREVDIA.cm       ) + s(BASAL.plot) + s(stem.density), data = d[DIA.cm > 0,])
-M.mod    <- gam(mortality  ~ em*relEM + s(ndep, by=as.factor(em), k = 3) + s(mat, k = 3) + s(map, k = 3) + s(PREVDIA.cm, k = 5) + s(BASAL.plot) + s(stem.density), data = d, family = 'binomial')
+#G.mod    <- gam(DIA.cm     ~ em*relEM + s(ndep, by=as.factor(em)) + s(mat, k = 3) + s(map, k = 3) + s(PREVDIA.cm       ) + s(BASAL.plot) + s(stem.density), data = d[DIA.cm > 0,])
+#M.mod    <- gam(mortality  ~ em*relEM + s(ndep, by=as.factor(em), k = 3) + s(mat, k = 3) + s(map, k = 3) + s(PREVDIA.cm, k = 5) + s(BASAL.plot) + s(stem.density), data = d, family = 'binomial')
+#Dropping spline in G-mod and M-mod, seeing if this improves simulation outcomes.
+G.mod    <- gam(DIA.cm     ~ em*relEM + em*ndep + s(mat, k = 3) + s(map, k = 3) + s(PREVDIA.cm       ) + s(BASAL.plot) + s(stem.density), data = d[DIA.cm > 0,])
+M.mod    <- gam(mortality  ~ em*relEM + em*ndep + s(mat, k = 3) + s(map, k = 3) + s(PREVDIA.cm, k = 5) + s(BASAL.plot) + s(stem.density), data = d, family = 'binomial')
 R.mod.am <- gam(recruit.am ~ am.density*relEM + ndep + s(mat, k = 3) + s(map, k = 3)                        + s(BASAL.plot) + s(stem.density), data = R.dat, family = 'poisson')
 R.mod.em <- gam(recruit.em ~ em.density*relEM + ndep + s(mat, k = 3) + s(map, k = 3)                        + s(BASAL.plot) + s(stem.density), data = R.dat, family = 'poisson')
 y.feedback <- list(G.mod, M.mod, R.mod.am, R.mod.em)
