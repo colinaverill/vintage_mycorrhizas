@@ -10,7 +10,7 @@ library(data.table)
 
 
 #set output path.----
-output.path <- factorial_hysteresis_simulation.path
+output.path <- factorial_hysteresis_simulation_uniform.path
 
 #load models and environmental covariates.----
 fits <- readRDS(myco_gam_fits2.path) #trying with new density dependence for recruitment.

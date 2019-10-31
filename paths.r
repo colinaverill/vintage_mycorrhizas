@@ -27,6 +27,7 @@ nul.alt_feedback_GAM_ndep_simulation.path <- paste0(storage.dir,'nul.alt_feedbac
 nul.alt_hysteresis_GAM_ndep_simulation.path <- paste0(storage.dir,'nul.alt_hysteresis_GAM_ndep_simulation.rds')
 factorial_hysteresis_simulation.path <- paste0(storage.dir,'factorial_hysteresis_simulation.rds')
 factorial_hysteresis_simulation_disturbance.path <- paste0(storage.dir,'factorial_hysteresis_simulation_disturbance.rds')
+factorial_hysteresis_simulation_uniform.path <- paste0(storage.dir,'factorial_hysteresis_simulation_uniform.path')
 forest_sim_within.plot.myc120.path <- paste0(storage.dir,'forest_sim_within.plot.myc120.rds')
 
 #JAGS model output paths.
