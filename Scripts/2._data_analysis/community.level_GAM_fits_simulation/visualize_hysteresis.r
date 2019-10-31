@@ -76,3 +76,8 @@ lines(smooth.spline(relEM.out.y ~ c(1:15)), lwd = 2, col = 'green')
 points(h.EM.y ~ c(15:1), pch = 16, col = 'purple', cex = 2)
 lines(smooth.spline(h.EM.y ~ c(15:1)), lwd = 2, col = 'purple')
 
+#check histograms.----
+a <- d$ramp.up$nul    $l9$plot.table$relEM #null.
+b <- d$ramp.up$alt.GRM$l9$plot.table$relEM #with feedbacks.
+hist(a)
+hist(b)

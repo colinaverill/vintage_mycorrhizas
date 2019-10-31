@@ -54,6 +54,21 @@ forest.sim <- function(g.mod, r.mod.am, r.mod.em, m.mod,
       if(i >  n.plots/2){plot.list[[i]] <- tree.2}
     }
   }
+  if(myco.split == 'uniform'){
+    plot.list <- list()
+    for(i in 1:n.plots){
+      #draw relative abundance EM trees from uniform distribution.
+      relEM <- runif(1,0,1)
+      #calculate number of EM trees (rounded). Number of AM trees is just however trees remain post rounding.
+      n.em <- round(nrow(tree) * relEM)
+      n.am <- nrow(tree) - n.em
+      #generate vector, drop in new tree table, 'tree.now'.
+      em <- c(rep(0, n.am), rep(1, n.em))
+      tree.now <- tree
+      tree.now$em <- em
+      plot.list[[i]] <- tree.now
+    }
+  }
   
   #get plot table with plot level characteristics.
   plot.table <- list()
