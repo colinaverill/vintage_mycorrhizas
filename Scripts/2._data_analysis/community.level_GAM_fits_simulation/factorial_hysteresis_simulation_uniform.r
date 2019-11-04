@@ -41,6 +41,7 @@ for(i in 1:length(ndep.ramp.range)){
                r.mod.em = fits$n.feedback$R.mod.em,
                env.cov = env.cov, 
                myco.split = 'uniform', silent = T,
+               disturb_rate = 0.0476/2,
                n.plots = N.PLOTS,
                n.cores = n.cores)
   )
@@ -52,6 +53,7 @@ for(i in 1:length(ndep.ramp.range)){
                r.mod.em = fits$y.feedback$R.mod.em,
                env.cov = env.cov, 
                myco.split = 'uniform', silent = T,
+               disturb_rate = 0.0476/2,
                n.plots = N.PLOTS,
                n.cores = n.cores)
   )
@@ -77,6 +79,7 @@ for(i in 1:length(ndep.down.range)){
                r.mod.em = fits$n.feedback$R.mod.em,
                env.cov = env.cov, 
                myco.split = 'uniform', silent = T,
+               disturb_rate = 0.0476/2,
                n.plots = 1000, n.step = 40,
                step.switch = 20, switch.lev = ndep.down.range[i],
                n.cores = n.cores)
@@ -90,6 +93,7 @@ for(i in 1:length(ndep.down.range)){
                r.mod.em = fits$y.feedback$R.mod.em,
                env.cov = env.cov, 
                myco.split = 'uniform', silent = T,
+               disturb_rate = 0.0476/2,
                n.plots = N.PLOTS, n.step = 40,
                step.switch = 20, switch.lev = ndep.down.range[i],
                n.cores = n.cores)

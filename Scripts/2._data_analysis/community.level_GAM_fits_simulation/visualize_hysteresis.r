@@ -2,10 +2,10 @@
 rm(list=ls())
 source('paths.r')
 
-#load data.
-d <- readRDS(factorial_hysteresis_simulation.path)
+#load data.----
+d <- readRDS(factorial_hysteresis_simulation_uniform.path)
 
-#grab relEM abundance under both model types after 100 years.
+#grab relEM abundance under both model types after 100 years.----
 relEM.out.n <- list()
 relEM.out.y <- list()
 n.em.1 <- list()
@@ -23,16 +23,19 @@ relEM.out.y <- unlist(relEM.out.y)
 n.em.1 <- unlist(n.em.1)
 n.am.1 <- unlist(n.am.1)
 
-#repeat with return data.
+#repeat with return data.----
 h.EM.n <- list()
 h.EM.y <- list()
+n.em.null.2 <- list()
 n.em.2 <- list()
 n.am.2 <- list()
 for(i in 1:length(d$ramp.down$nul)){
   h.EM.n[[i]] <- mean(d$ramp.down$nul    [[i]]$plot.table$relEM)
   h.EM.y[[i]] <- mean(d$ramp.down$alt.GRM[[i]]$plot.table$relEM)
+  em.null.2 <- d$ramp.down$nul    [[i]]$plot.table$relEM
   em.2 <- d$ramp.down$alt.GRM[[i]]$plot.table$relEM
   am.2 <- d$ramp.down$alt.GRM[[i]]$plot.table$relEM
+  n.em.null.2[[i]] <- length(em.null.2[em.null.2 > 0.9])
   n.em.2[[i]] <- length(em.2[em.2 > 0.9])
   n.am.2[[i]] <- length(am.2[am.2 < 0.1])
 }
@@ -75,9 +78,10 @@ lines(smooth.spline(relEM.out.y ~ c(1:15)), lwd = 2, col = 'green')
 #drop return points.
 points(h.EM.y ~ c(15:1), pch = 16, col = 'purple', cex = 2)
 lines(smooth.spline(h.EM.y ~ c(15:1)), lwd = 2, col = 'purple')
-
+  
 #check histograms.----
-a <- d$ramp.up$nul    $l9$plot.table$relEM #null.
-b <- d$ramp.up$alt.GRM$l9$plot.table$relEM #with feedbacks.
-hist(a)
-hist(b)
+a <- d$ramp.down$nul    $l14$plot.table$relEM #null.
+b <- d$ramp.down$alt.GRM$l14$plot.table$relEM #with feedbacks.
+hist(a, main = 'without feedbacks')
+hist(b, main = 'with feedbacks')
+

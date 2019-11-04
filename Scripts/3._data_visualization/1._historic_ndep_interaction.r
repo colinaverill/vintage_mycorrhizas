@@ -52,14 +52,37 @@ detrend <- logit(d$c.relEM) - fitted(mod)
 detrend <- detrend + predict(mod, newdata = dat)
 d$detrend <- detrend
 
+#Bin data into historic relEM categories.----
+lo_bin <- c(0, 0.9)
+#md_bin <- c(0.5,0.7)
+hi_bin <- c(0.9,1)
+d$EMbin <- NA
+d$EMbin <- ifelse(d$h.relEM <= lo_bin[2], 'lo', d$EMbin)
+#d$EMbin <- ifelse(d$h.relEM > md_bin[1] & d$h.relEM <= md_bin[2], 'md',d$EMbin)
+d$EMbin <- ifelse(d$h.relEM > hi_bin[1], 'hi', d$EMbin)
+
+#Within historic relEM categories get binned response to Ndep w/ mean and uncertainty.----
+n.cuts <- 8
+d$N.bin <- cut(d$n.dep, breaks = n.cuts)
+#Get mean detrend 
+lo.mu <- aggregate(inv.logit(detrend) ~ N.bin, data = d[d$EMbin == 'lo',], FUN = mean)[,2]
+#md.mu <- aggregate(inv.logit(detrend) ~ N.bin, data = d[d$EMbin == 'md',], FUN = mean)[,2]
+hi.mu <- aggregate(inv.logit(detrend) ~ N.bin, data = d[d$EMbin == 'hi',], FUN = mean)[,2]
+ x.lo <- aggregate(  n.dep ~ N.bin, data = d[d$EMbin == 'lo',], FUN = mean)[,2]
+ #x.md <- aggregate(  n.dep ~ N.bin, data = d[d$EMbin == 'md',], FUN = mean)[,2]
+ x.hi <- aggregate(  n.dep ~ N.bin, data = d[d$EMbin == 'hi',], FUN = mean)[,2]
+
+
 #Generate response norms to Ndep at 0.3, 0.6 and 0.9 h.relEM.----
 n.dep <- seq(min(d$n.dep), max(d$n.dep), by = 0.1)
 lev <- c(0.2, 0.6,0.95)
+#lev <- c(mean(d[d$EMbin == 'lo',]$h.relEM),mean(d[d$EMbin == 'md',]$h.relEM),mean(d[d$EMbin == 'hi',]$h.relEM))
+lev <- c(mean(d[d$EMbin == 'lo',]$h.relEM),mean(d[d$EMbin == 'hi',]$h.relEM))
 lo <- data.frame(n.dep, lev[1])
-md <- data.frame(n.dep, lev[2])
-hi <- data.frame(n.dep, lev[3])
+#md <- data.frame(n.dep, lev[2])
+hi <- data.frame(n.dep, lev[2])
 colnames(lo)[2] <- 'h.relEM'
-colnames(md)[2] <- 'h.relEM'
+#colnames(md)[2] <- 'h.relEM'
 colnames(hi)[2] <- 'h.relEM'
 dat <- data.frame(dat)
 dat <- dat[,!(colnames(dat) %in% c('n.dep','h.relEM'))] 
@@ -71,14 +94,16 @@ for(i in 1:(length(n.dep) - 1)){
 }
 mu.frame <- data.frame(mu.frame)
 lo <- data.frame(lo, mu.frame)
-md <- data.frame(md, mu.frame)
+#md <- data.frame(md, mu.frame)
 hi <- data.frame(hi, mu.frame)
 lo.norm <- (predict(mod, newdata = lo))
-md.norm <- (predict(mod, newdata = md))
+#md.norm <- (predict(mod, newdata = md))
 hi.norm <- (predict(mod, newdata = hi))
 lo.col <- d[which.min(abs(lev[1] - d$h.relEM)),]$col
-md.col <- d[which.min(abs(lev[2] - d$h.relEM)),]$col
-hi.col <- d[which.min(abs(lev[3] - d$h.relEM)),]$col
+#md.col <- d[which.min(abs(lev[2] - d$h.relEM)),]$col
+hi.col <- d[which.min(abs(lev[2] - d$h.relEM)),]$col
+
+
 
 #png save line.----
 #png(filename = output.path, width = 8, height = 5, units = 'in',res = 300)
@@ -86,7 +111,7 @@ hi.col <- d[which.min(abs(lev[3] - d$h.relEM)),]$col
 #plot.----
 #layout(matrix(1:2,ncol=2), width = c(6,1),height = c(1,1)) #for putting a legend on one side.
 par(mar = c(4,4,.5,.5))
-trans <- 1
+trans <- 0.5
 limy <- c(0.3, 0.9)
 plot(inv.logit(detrend) ~ n.dep, data = d, col = adjustcolor(d$col, trans), bty = 'l', pch = 16, cex = 0.75, ylab = NA, xlab = NA, ylim = limy)
 mtext('Nitrogen Deposition', side = 1, line = 2.2, cex = 1.3)
@@ -98,9 +123,14 @@ mtext('Relative Abundance EM Trees', side = 2, line = 2.2, cex = 1.3)
 #rasterImage(legend_image, .3, .3, .7, .7)
 #rasterImage(legend_image, 0, .3, .1, .1)
 
+#drop response norms based on different levels of h.relEM.
 lines(smooth.spline(lo.norm ~ n.dep), lwd = 2, col = lo.col)
-lines(smooth.spline(md.norm ~ n.dep), lwd = 2, col = md.col)
+#lines(smooth.spline(md.norm ~ n.dep), lwd = 2, col = md.col)
 lines(smooth.spline(hi.norm ~ n.dep), lwd = 2, col = hi.col)
 
+#drop aggregated points.
+points(x.lo, lo.mu, pch = 16, cex = 3, col = lo.col)
+#points(x.md, md.mu, pch = 16, cex = 3, col = md.col)
+points(x.hi, hi.mu, pch = 16, cex = 3, col = hi.col)
 #end plot.----
 #dev.off()

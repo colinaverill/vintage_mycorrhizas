@@ -1,5 +1,6 @@
 forest.sim <- function(g.mod, r.mod.am, r.mod.em, m.mod, 
                        initial_density = 20, n.plots = 100, n.step = 20,
+                       disturb_rate = 0,
                        step.switch = NA, switch.lev = NA, #if changing N level mid run.
                        env.cov = NA, n.cores = NA, silent = F,
                        myco.split = 'within_plot'){
@@ -143,6 +144,19 @@ forest.sim <- function(g.mod, r.mod.am, r.mod.em, m.mod,
         
         #update your tree table.
         to_return <- rbind(tree.new, new.recruit.em, new.recruit.am)
+        
+        #role stand replacing disturbance dice.
+        annihilate <- rbinom(n = 1, size = 1, prob = disturb_rate)
+        if(annihilate == 1){
+          relEM <- sum(to_return[,2]) / nrow(to_return)
+          new.em <- rbinom(n = initial_density,size = 1,prob = relEM)
+          new.DIA.cm <- rep(12.7, initial_density)
+          new.plot <- data.frame(new.DIA.cm, new.em)
+          colnames(new.plot) <- colnames(to_return)
+          to_return <- new.plot
+        }
+        
+        #return result.
         return(to_return)
         #new.plot.list[[j]] <- to_return
       } #end parallel plot loop.

@@ -1,7 +1,7 @@
 #running simulations w/ stand replacing disturbance rate.
 rm(list=ls())
 source('paths.r')
-source('project_functions/forest.sim_disturbance.r')
+source('project_functions/forest.sim.r')
 source('project_functions/tic_toc.r')
 source('project_functions/makeitwork.r')
 library(mgcv)
@@ -41,6 +41,7 @@ for(i in 1:length(ndep.ramp.range)){
                r.mod.em = fits$n.feedback$R.mod.em,
                env.cov = env.cov, 
                myco.split = 'between_plot', silent = T,
+               disturb_rate = 0.0476/2,
                n.plots = N.PLOTS,
                n.cores = n.cores)
   )
@@ -52,6 +53,7 @@ for(i in 1:length(ndep.ramp.range)){
                r.mod.em = fits$y.feedback$R.mod.em,
                env.cov = env.cov, 
                myco.split = 'between_plot', silent = T,
+               disturb_rate = 0.0476/2,
                n.plots = N.PLOTS,
                n.cores = n.cores)
   )
@@ -77,6 +79,7 @@ for(i in 1:length(ndep.down.range)){
                r.mod.em = fits$n.feedback$R.mod.em,
                env.cov = env.cov, 
                myco.split = 'between_plot', silent = T,
+               disturb_rate = 0.0476/2,
                n.plots = 1000, n.step = 40,
                step.switch = 20, switch.lev = ndep.down.range[i],
                n.cores = n.cores)
@@ -90,6 +93,7 @@ for(i in 1:length(ndep.down.range)){
                r.mod.em = fits$y.feedback$R.mod.em,
                env.cov = env.cov, 
                myco.split = 'between_plot', silent = T,
+               disturb_rate = 0.0476/2,
                n.plots = N.PLOTS, n.step = 40,
                step.switch = 20, switch.lev = ndep.down.range[i],
                n.cores = n.cores)

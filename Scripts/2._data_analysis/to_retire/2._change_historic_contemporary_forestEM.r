@@ -59,14 +59,17 @@ rsq <- round(summary(lm(logit(d$c.relEM) ~ fitted(m1)))$r.squared, 2)
 mtext(paste0('R2 = ',rsq), side = 3, adj = 0.05, line = -2)
 
 #GLS models: Predictions are weird and literatlly nothing is significant. Prob mis-specified.----
-m1 <- gls(logit(c.relEM) ~ logit(h.relEM) * n.dep + logit(h.relEM) *(mat30) + (map30) + logit(h.relEM)*(mat.delta) + (map.delta),
-          correlation = corRatio(form = ~longitude + latitude, nugget = TRUE),
-          data = d)
-summary(m1) 
-plot((d$c.relEM) ~ fitted(m1), bty = 'l', cex = 0.3)
-abline(0,1, lwd =2, col = 'purple', lty = 3)
-vario3 <- Variogram(m1, form = ~longitude + latitude, resType = "pearson")
-plot(vario3, smooth = FALSE)
+gls.run = F
+if(gls.run == T){
+  m1 <- gls(logit(c.relEM) ~ logit(h.relEM) * n.dep + logit(h.relEM) *(mat30) + (map30) + logit(h.relEM)*(mat.delta) + (map.delta),
+            correlation = corRatio(form = ~longitude + latitude, nugget = TRUE),
+            data = d)
+  summary(m1) 
+  plot((d$c.relEM) ~ fitted(m1), bty = 'l', cex = 0.3)
+  abline(0,1, lwd =2, col = 'purple', lty = 3)
+  vario3 <- Variogram(m1, form = ~longitude + latitude, resType = "pearson")
+  plot(vario3, smooth = FALSE)
+}
 
 #generate figures.
  
